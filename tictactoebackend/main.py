@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from middleware.logging_middleware import LoggingMiddleware
 
 from routes.player import router as player_router
 from routes.game import router as game_router
@@ -17,6 +18,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(LoggingMiddleware)
 
 @app.get("/")
 def home():
