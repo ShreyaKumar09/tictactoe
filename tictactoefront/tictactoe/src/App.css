@@ -1,0 +1,897 @@
+/* =========================================
+   GOOGLE FONT
+========================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+/* =========================================
+   RESET
+========================================= */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Poppins",sans-serif;
+}
+
+/* =========================================
+   BODY
+========================================= */
+
+body{
+
+    background:linear-gradient(135deg,#2563eb,#1e40af);
+
+    min-height:100vh;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    padding:40px;
+}
+
+/* =========================================
+   MAIN CONTAINER
+========================================= */
+
+.container{
+
+    width:100%;
+
+    max-width:1350px;
+
+    background:rgba(255,255,255,.12);
+
+    backdrop-filter:blur(15px);
+
+    border-radius:25px;
+
+    padding:45px;
+
+    box-shadow:0 20px 50px rgba(0,0,0,.25);
+
+    color:white;
+
+    text-align:center;
+}
+
+/* =========================================
+   HEADINGS
+========================================= */
+
+h1{
+
+    font-size:64px;
+
+    font-weight:800;
+
+    margin-bottom:10px;
+}
+
+.subtitle{
+
+    font-size:22px;
+
+    opacity:.9;
+
+    margin-bottom:40px;
+}
+
+h2{
+
+    font-size:30px;
+
+    margin-bottom:20px;
+
+    font-weight:700;
+}
+
+h3{
+
+    font-size:24px;
+
+    margin-bottom:25px;
+
+    font-weight:600;
+}
+
+/* =========================================
+   STATUS
+========================================= */
+
+.status{
+
+    font-size:26px;
+
+    font-weight:600;
+
+    margin-bottom:35px;
+}
+
+/* =========================================
+   PLAYER INPUTS
+========================================= */
+
+.player-inputs{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:20px;
+
+    flex-wrap:wrap;
+
+    margin-bottom:30px;
+}
+
+/* =========================================
+   INPUTS
+========================================= */
+
+input{
+
+    width:320px;
+
+    padding:16px;
+
+    border:none;
+
+    outline:none;
+
+    border-radius:14px;
+
+    background:rgba(255,255,255,.18);
+
+    color:white;
+
+    font-size:18px;
+
+    transition:.3s;
+}
+
+input::placeholder{
+
+    color:#e2e8f0;
+}
+
+input:focus{
+
+    background:rgba(255,255,255,.25);
+
+    box-shadow:0 0 10px rgba(255,255,255,.35);
+}
+
+/* =========================================
+   BUTTONS
+========================================= */
+
+button{
+
+    border:none;
+
+    cursor:pointer;
+
+    border-radius:14px;
+
+    font-size:18px;
+
+    font-weight:600;
+
+    transition:.3s;
+
+    padding:15px 30px;
+}
+
+button:hover{
+
+    transform:translateY(-4px);
+
+    box-shadow:0 10px 20px rgba(0,0,0,.25);
+}
+
+button:active{
+
+    transform:scale(.97);
+}
+
+/* =========================================
+   START BUTTON
+========================================= */
+
+.start-btn{
+
+    background:#22c55e;
+
+    color:white;
+}
+
+.start-btn:hover{
+
+    background:#16a34a;
+}
+
+/* =========================================
+   ADMIN BUTTON
+========================================= */
+
+.admin-btn{
+
+    margin-bottom:40px;
+
+    background:#0ea5e9;
+
+    color:white;
+}
+
+.admin-btn:hover{
+
+    background:#0284c7;
+}
+
+/* =========================================
+   BOARD
+========================================= */
+
+.board{
+
+    display:grid;
+
+    grid-template-columns:repeat(3,120px);
+
+    gap:18px;
+
+    justify-content:center;
+
+    margin:40px auto;
+}
+
+/* =========================================
+   SQUARE
+========================================= */
+
+.square{
+
+    width:120px;
+
+    height:120px;
+
+    background:white;
+
+    border:none;
+
+    border-radius:18px;
+
+    cursor:pointer;
+
+    font-size:60px;
+
+    font-weight:700;
+
+    transition:.3s;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.18);
+}
+
+.square:hover{
+
+    transform:translateY(-5px);
+
+    box-shadow:0 15px 35px rgba(0,0,0,.25);
+}
+
+/* =========================================
+   X & O COLORS
+========================================= */
+
+.x-square{
+
+    color:#2563eb;
+}
+
+.o-square{
+
+    color:#ef4444;
+}
+
+/* =========================================
+   GAME BUTTONS
+========================================= */
+
+.game-buttons{
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:20px;
+
+    margin-top:25px;
+
+    margin-bottom:35px;
+
+    flex-wrap:wrap;
+}
+
+/* Restart */
+
+.game-buttons button:first-child{
+
+    background:#256;
+
+    color:white;
+}
+
+.game-buttons button:first-child:hover{
+
+    background:#1d4ed8;
+}
+
+/* Exit */
+
+.game-buttons button:last-child{
+
+    background:#ef4444;
+
+    color:white;
+}
+
+.game-buttons button:last-child:hover{
+
+    background:#dc2626;
+}
+/* =========================================
+   DASHBOARD
+========================================= */
+
+.dashboard{
+
+    margin-top:50px;
+
+    display:grid;
+
+    grid-template-columns:1fr 2fr;
+
+    gap:30px;
+
+    align-items:start;
+}
+
+/* =========================================
+   CARD DESIGN
+========================================= */
+
+.leaderboard,
+.history{
+
+    background:rgba(255,255,255,.15);
+
+    backdrop-filter:blur(15px);
+
+    border-radius:20px;
+
+    padding:25px;
+
+    box-shadow:0 15px 35px rgba(0,0,0,.18);
+
+    transition:.3s;
+}
+
+.leaderboard:hover,
+.history:hover{
+
+    transform:translateY(-6px);
+
+    box-shadow:0 20px 40px rgba(0,0,0,.25);
+}
+
+/* =========================================
+   LEADERBOARD
+========================================= */
+
+.leaderboard h2{
+
+    margin-bottom:25px;
+
+    text-align:center;
+
+    font-size:30px;
+}
+
+.leaderboard ol{
+
+    margin-top:15px;
+
+    padding-left:25px;
+}
+
+.leaderboard li{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:15px;
+
+    font-size:18px;
+
+    padding:10px;
+
+    background:rgba(255,255,255,.08);
+
+    border-radius:10px;
+}
+
+.leaderboard p{
+
+    text-align:center;
+
+    margin-top:25px;
+
+    font-size:18px;
+}
+
+/* =========================================
+   MATCH HISTORY
+========================================= */
+
+.history h2{
+
+    text-align:center;
+
+    margin-bottom:25px;
+
+    font-size:30px;
+}
+
+.history table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    overflow:hidden;
+
+    border-radius:12px;
+}
+
+/* =========================================
+   TABLE HEADER
+========================================= */
+
+.history thead{
+
+    background:#2563eb;
+}
+
+.history th{
+
+    color:white;
+
+    padding:16px;
+
+    font-size:17px;
+
+    font-weight:600;
+}
+
+/* =========================================
+   TABLE BODY
+========================================= */
+
+.history td{
+
+    padding:15px;
+
+    text-align:center;
+
+    font-size:17px;
+
+    border-bottom:1px solid rgba(255,255,255,.15);
+}
+
+.history tbody tr{
+
+    transition:.3s;
+}
+
+.history tbody tr:hover{
+
+    background:rgba(255,255,255,.08);
+}
+
+.history p{
+
+    text-align:center;
+
+    margin-top:20px;
+
+    font-size:18px;
+}
+
+/* =========================================
+   SMALL BADGES
+========================================= */
+
+.badge{
+
+    background:#22c55e;
+
+    color:white;
+
+    padding:5px 12px;
+
+    border-radius:20px;
+
+    font-size:14px;
+
+    font-weight:600;
+}
+
+/* =========================================
+   WINNER LABEL
+========================================= */
+
+.winner{
+
+    color:#22c55e;
+
+    font-weight:bold;
+}
+
+/* =========================================
+   LOADER (Future Use)
+========================================= */
+
+.loader{
+
+    width:45px;
+
+    height:45px;
+
+    border:5px solid white;
+
+    border-top-color:transparent;
+
+    border-radius:50%;
+
+    animation:spin 1s linear infinite;
+
+    margin:auto;
+}
+
+@keyframes spin{
+
+    from{
+
+        transform:rotate(0deg);
+
+    }
+
+    to{
+
+        transform:rotate(360deg);
+
+    }
+}
+
+/* =========================================
+   CARD TITLES
+========================================= */
+
+.leaderboard h2,
+.history h2{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:10px;
+}
+/* =========================================
+   ADMIN LOGIN
+========================================= */
+
+.admin-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.admin-card {
+
+    width: 420px;
+
+    background: rgba(255,255,255,.15);
+
+    backdrop-filter: blur(15px);
+
+    padding: 35px;
+
+    border-radius: 20px;
+
+    text-align: center;
+
+    color: white;
+
+    box-shadow: 0 20px 40px rgba(0,0,0,.25);
+}
+
+.admin-card h1 {
+
+    font-size: 36px;
+
+    margin-bottom: 30px;
+}
+
+.admin-card input {
+
+    width: 100%;
+
+    margin-bottom: 20px;
+}
+
+.admin-card button {
+
+    width: 100%;
+}
+
+.back-btn {
+
+    margin-top: 20px;
+
+    background: #64748b;
+
+    color: white;
+}
+
+.back-btn:hover {
+
+    background: #475569;
+}
+
+/* =========================================
+   ADMIN DASHBOARD
+========================================= */
+
+.admin-dashboard {
+
+    max-width: 1200px;
+
+    margin: auto;
+
+    color: white;
+}
+
+.admin-title {
+
+    text-align: center;
+
+    font-size: 50px;
+
+    margin-bottom: 40px;
+}
+
+/* =========================================
+   STATS
+========================================= */
+
+.stats {
+
+    display: grid;
+
+    grid-template-columns: repeat(4,1fr);
+
+    gap: 25px;
+
+    margin-bottom: 40px;
+}
+
+.stat-card {
+
+    background: rgba(255,255,255,.15);
+
+    backdrop-filter: blur(15px);
+
+    border-radius: 18px;
+
+    padding: 25px;
+
+    text-align: center;
+
+    transition: .3s;
+}
+
+.stat-card:hover {
+
+    transform: translateY(-5px);
+}
+
+.stat-card h3 {
+
+    font-size: 18px;
+
+    margin-bottom: 15px;
+}
+
+.stat-card h2 {
+
+    font-size: 40px;
+}
+
+/* =========================================
+   ACTION BUTTONS
+========================================= */
+
+.action-buttons {
+
+    display: flex;
+
+    justify-content: center;
+
+    gap: 20px;
+
+    flex-wrap: wrap;
+
+    margin-top: 30px;
+}
+
+.logout-btn {
+
+    background: #ef4444;
+
+    color: white;
+}
+
+.logout-btn:hover {
+
+    background: #dc2626;
+}
+
+.delete-btn {
+
+    background: #f59e0b;
+
+    color: white;
+}
+
+.delete-btn:hover {
+
+    background: #d97706;
+}
+
+/* =========================================
+   ANIMATIONS
+========================================= */
+
+.fade {
+
+    animation: fade .6s ease;
+}
+
+@keyframes fade {
+
+    from {
+
+        opacity: 0;
+
+        transform: translateY(20px);
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform: translateY(0);
+    }
+}
+
+/* =========================================
+   SCROLLBAR
+========================================= */
+
+::-webkit-scrollbar {
+
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+
+    background: #1e3a8a;
+}
+
+::-webkit-scrollbar-thumb {
+
+    background: #60a5fa;
+
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+
+    background: #3b82f6;
+}
+
+/* =========================================
+   FOOTER
+========================================= */
+
+footer {
+
+    margin-top: 40px;
+
+    text-align: center;
+
+    color: rgba(255,255,255,.8);
+
+    font-size: 15px;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media(max-width:1100px){
+.dashboard{
+grid-template-columns:1fr;
+}
+.stats{
+grid-template-columns:repeat(2,1fr);
+}
+}
+
+@media(max-width:768px){
+.container{
+padding:25px;
+}
+h1{
+font-size:42px;
+}
+.subtitle{
+font-size:17px;
+}
+.board{
+grid-template-columns:repeat(3,90px);
+gap:12px;
+}
+.square{
+width:90px;
+height:90px;
+font-size:42px;
+}
+.player-inputs{
+flex-direction:column;
+}
+input{
+width:100%;
+}
+.stats{
+grid-template-columns:1fr;
+}
+.history{
+overflow-x:auto;
+}
+.history table{
+min-width:600px;
+}
+.admin-card{
+width:100%;
+}
+.action-buttons{
+flex-direction:column;
+}
+button{
+width:100%;
+}
+}
