@@ -4,6 +4,55 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
+/* THEME VARIABLES */
+:root{
+  --bg-gradient: linear-gradient(135deg,#eef5ff,#dbeafe);
+
+  --container-bg:#ffffff;
+  --card-bg:#f8fafc;
+
+  --text-color:#1e293b;
+  --secondary-text:#475569;
+
+  --input-bg:#f1f5f9;
+  --input-focus:#ffffff;
+  --input-border:#cbd5e1;
+
+  --button-green:#16a34a;
+  --button-green-hover:#15803d;
+
+  --button-blue:#2563eb;
+  --button-blue-hover:#1d4ed8;
+
+  --square-bg:#ffffff;
+  --shadow:0 15px 40px rgba(0,0,0,.12);
+}
+
+body.dark{
+
+  --bg-gradient:linear-gradient(135deg,#0f172a,#1e293b);
+
+  --container-bg:#1e293b;
+  --card-bg:#334155;
+
+  --text-color:#f8fafc;
+  --secondary-text:#cbd5e1;
+
+  --input-bg:#475569;
+  --input-focus:#64748b;
+  --input-border:#64748b;
+
+  --button-green:#22c55e;
+  --button-green-hover:#16a34a;
+
+  --button-blue:#3b82f6;
+  --button-blue-hover:#2563eb;
+
+  --square-bg:#ffffff;
+
+  --shadow:0 20px 45px rgba(0,0,0,.45);
+}
+
 /* =========================================
    RESET
 ========================================= */
@@ -20,8 +69,9 @@
 ========================================= */
 
 body{
+transition:background .3s,color .3s;
 
-    background:linear-gradient(135deg,#2563eb,#1e40af);
+    background:var(--bg-gradient);
 
     min-height:100vh;
 
@@ -44,19 +94,21 @@ body{
 
     max-width:1350px;
 
-    background:rgba(255,255,255,.12);
+    background:var(--container-bg);
 
-    backdrop-filter:blur(15px);
+    backdrop-filter:blur(12px);
 
     border-radius:25px;
 
     padding:45px;
-
-    box-shadow:0 20px 50px rgba(0,0,0,.25);
-
-    color:white;
+    
+    box-shadow:var(--shadow);
+    
+    color:var(--text-color);
 
     text-align:center;
+
+    border:1px solid rgba(255,255,255,.08);
 }
 
 /* =========================================
@@ -147,23 +199,31 @@ input{
 
     border-radius:14px;
 
-    background:rgba(255,255,255,.18);
+    background:var(--input-bg);
 
-    color:white;
+    color:var(--text-color);
 
     font-size:18px;
 
     transition:.3s;
 }
 
-input::placeholder{
+input{
 
-    color:#e2e8f0;
+border:1px solid var(--input-border);
+
 }
 
+input::placeholder{
+
+color:var(--secondary-text);
+
+opacity:.8;
+
+}
 input:focus{
 
-    background:rgba(255,255,255,.25);
+    background:var(--input-focus);
 
     box-shadow:0 0 10px rgba(255,255,255,.35);
 }
@@ -207,14 +267,14 @@ button:active{
 
 .start-btn{
 
-    background:#22c55e;
+    background:var(--button-green);
 
     color:white;
 }
 
 .start-btn:hover{
 
-    background:#16a34a;
+  background:var(--button-green-hover);
 }
 
 /* =========================================
@@ -227,7 +287,7 @@ button:active{
 
     background:#0ea5e9;
 
-    color:white;
+    color:var(--text-color);
 }
 
 .admin-btn:hover{
@@ -325,7 +385,7 @@ button:active{
 
     background:#256;
 
-    color:white;
+    color:var(--text-color);
 }
 
 .game-buttons button:first-child:hover{
@@ -339,7 +399,7 @@ button:active{
 
     background:#ef4444;
 
-    color:white;
+    color:var(--text-color);
 }
 
 .game-buttons button:last-child:hover{
@@ -370,7 +430,7 @@ button:active{
 .leaderboard,
 .history{
 
-    background:rgba(255,255,255,.15);
+    background:var(--card-bg);
 
     backdrop-filter:blur(15px);
 
@@ -474,7 +534,7 @@ button:active{
 
 .history th{
 
-    color:white;
+    color:var(--text-color);
 
     padding:16px;
 
@@ -525,7 +585,7 @@ button:active{
 
     background:#22c55e;
 
-    color:white;
+    color:var(--text-color);
 
     padding:5px 12px;
 
@@ -894,4 +954,54 @@ flex-direction:column;
 button{
 width:100%;
 }
+}
+
+
+/* =========================================
+   THEME TOGGLE
+========================================= */
+
+.header {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.theme-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.theme-toggle {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 0;
+
+    border-radius: 50%;
+
+    border: 1px solid var(--input-border);
+
+    background: var(--card-bg);
+
+    color: var(--text-color);
+
+    cursor: pointer;
+
+    font-size: 18px;
+
+    transition: all 0.3s ease;
+
+    box-shadow: 0 5px 15px rgba(0,0,0,.15);
+}
+
+.theme-toggle:hover {
+    transform: translateY(-2px) scale(1.08);
 }

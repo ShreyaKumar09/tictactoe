@@ -4,6 +4,7 @@ import api from "../api";
 import Leaderboard from "../components/Leaderboard";
 import MatchHistory from "../components/MatchHistory";
 import { Link } from "react-router-dom";
+import ThemeToggle from "../components/ThemeToggle";
 import {
   FaTrophy,
   FaHistory,
@@ -131,6 +132,10 @@ function Home() {
     return (
       <div className="container">
         <h1>Tic Tac Toe</h1>
+                
+         <div className="theme-container">
+        <ThemeToggle />
+    </div>
         <p className="subtitle">
   Challenge your friends and climb the leaderboard!
 </p>
