@@ -2,12 +2,12 @@
 import React from "react";
 import {
   FaUserCircle,
-  FaCircle,
   FaTrophy,
   FaHistory,
   FaRedo,
   FaSignOutAlt,
   FaGamepad,
+  FaCircle,
 } from "react-icons/fa";
 
 import Square from "./Square";
@@ -20,110 +20,271 @@ function GameBoard({
   xTurn,
   player1Name,
   player2Name,
+  mySymbol,
+  roomId,
   refresh,
   resetGame,
   exitGame,
   handleClick,
 }) {
+  // ---------------------------------------------------------
+  // GAME STATUS
+  // ---------------------------------------------------------
+
   const isDraw = board.every((cell) => cell) && !winner;
+
+  const myTurn =
+    (xTurn && mySymbol === "X") ||
+    (!xTurn && mySymbol === "O");
+
+  const player1IsPlaying = xTurn && !winner && !isDraw;
+  const player2IsPlaying = !xTurn && !winner && !isDraw;
+
+  // ---------------------------------------------------------
+  // PLAYER STATUS
+  // ---------------------------------------------------------
+
+  function getPlayerStatus(symbol) {
+    if (winner) {
+      return winner === symbol ? "Winner" : "Lost";
+    }
+
+    if (isDraw) {
+      return "Draw";
+    }
+
+    if (
+      (xTurn && symbol === "X") ||
+      (!xTurn && symbol === "O")
+    ) {
+      return "Playing";
+    }
+
+    return "Waiting";
+  }
+
+  // ---------------------------------------------------------
+  // PLAYER CARD
+  // ---------------------------------------------------------
+
+  function PlayerCard({ name, symbol, isPlaying }) {
+    const isMe = mySymbol === symbol;
+
+    return (
+      <div
+        className={`player-card ${
+          isPlaying ? "active-player" : ""
+        } ${isMe ? "my-player" : ""}`}
+      >
+        <div className="player-avatar">
+          <FaUserCircle />
+        </div>
+
+        <div className="player-label">
+          {isMe ? "YOU" : "OPPONENT"}
+        </div>
+
+        <div className="player-name">
+          {name || `Player ${symbol}`}
+        </div>
+
+        <div
+          className={`player-symbol ${
+            symbol === "X" ? "symbol-x" : "symbol-o"
+          }`}
+        >
+          {symbol === "X" ? "❌" : "⭕"} {symbol}
+        </div>
+
+        <div className="player-status">
+          <span
+            className={`status-dot ${
+              isPlaying ? "online" : "waiting"
+            }`}
+          />
+
+          {getPlayerStatus(symbol)}
+        </div>
+      </div>
+    );
+  }
+
+  // ---------------------------------------------------------
+  // GAME STATUS MESSAGE
+  // ---------------------------------------------------------
+
+  function renderGameStatus() {
+    if (winner) {
+      if (winner === mySymbol) {
+        return (
+          <div className="result-message winner-message">
+            🏆 You Won!
+          </div>
+        );
+      }
+
+      return (
+        <div className="result-message loser-message">
+          😔 You Lost!
+        </div>
+      );
+    }
+
+    if (isDraw) {
+      return (
+        <div className="result-message draw-message">
+          🤝 It's a Draw!
+        </div>
+      );
+    }
+
+    if (myTurn) {
+      return (
+        <div className="turn-message your-turn">
+          🎯 Your Turn
+        </div>
+      );
+    }
+
+    return (
+      <div className="turn-message opponent-turn">
+        ⏳ Opponent's Turn
+      </div>
+    );
+  }
+
+  // ---------------------------------------------------------
+  // MAIN UI
+  // ---------------------------------------------------------
 
   return (
     <div className="container">
-      <div className="game-layout">
+      <div className="game-page">
 
-        {/* LEFT PLAYER */}
-        <div className="player-card">
-          <div className="player-avatar">
-            <FaUserCircle />
-          </div>
+        {/* =================================================
+            HEADER
+        ================================================= */}
 
-          <div className="player-name">
-            {player1Name || "Player X"}
-          </div>
-
-          <div className="player-symbol">
-            ❌ X
-          </div>
-
-          <br />
-
-          <div>
-            <span
-              className={`status-dot ${
-                xTurn && !winner ? "online" : "waiting"
-              }`}
-            ></span>
-
-            {xTurn && !winner ? "Playing" : "Waiting"}
-          </div>
-        </div>
-
-        {/* GAME */}
-        <div className="middle-panel">
-
+        <div className="game-header">
           <h1>
-            <FaGamepad /> Tic Tac Toe
+            <FaGamepad />
+            Tic Tac Toe
           </h1>
 
-          <div className="status">
-            {winner
-              ? `🏆 Winner : ${
-                  winner === "X"
-                    ? player1Name
-                    : player2Name
-                }`
-              : isDraw
-              ? "🤝 It's a Draw!"
-              : `🎯 ${
-                  xTurn
-                    ? `${player1Name}'s Turn`
-                    : `${player2Name}'s Turn`
-                }`}
+          <div className="room-display">
+            Room: <strong>{roomId || "ONLINE"}</strong>
           </div>
-
-          <div className="board">
-            {board.map((value, index) => (
-              <Square
-                key={index}
-                value={value}
-                onClick={() => handleClick(index)}
-              />
-            ))}
-          </div>
-
-          {(winner || isDraw) && (
-            <div className="game-buttons">
-
-              <button onClick={resetGame}>
-                <FaRedo /> Restart
-              </button>
-
-              <button onClick={exitGame}>
-                <FaSignOutAlt /> Exit
-              </button>
-
-            </div>
-          )}
         </div>
 
-        {/* RIGHT PANEL */}
-        <div className="sidebar">
+        {/* =================================================
+            GAME AREA
+        ================================================= */}
 
-          <section>
+        <div className="game-layout">
 
-            <h2>
-              <FaTrophy /> Leaderboard
-            </h2>
+          {/* PLAYER X */}
+
+          <PlayerCard
+            name={player1Name}
+            symbol="X"
+            isPlaying={player1IsPlaying}
+          />
+
+          {/* =================================================
+              CENTER GAME
+          ================================================= */}
+
+          <div className="middle-panel">
+
+            <div className="game-vs">
+              <span>{player1Name || "Player X"}</span>
+
+              <strong>VS</strong>
+
+              <span>{player2Name || "Player O"}</span>
+            </div>
+
+            {/* STATUS */}
+
+            <div className="status">
+              {renderGameStatus()}
+            </div>
+
+            {/* BOARD */}
+
+            <div className="board">
+              {board.map((value, index) => (
+                <Square
+                  key={index}
+                  value={value}
+                  onClick={() => handleClick(index)}
+                />
+              ))}
+            </div>
+
+            {/* GAME BUTTONS */}
+
+            {(winner || isDraw) && (
+              <div className="game-buttons">
+
+                <button
+                  className="restart-btn"
+                  onClick={resetGame}
+                >
+                  <FaRedo />
+                  Restart
+                </button>
+
+                <button
+                  className="exit-btn"
+                  onClick={exitGame}
+                >
+                  <FaSignOutAlt />
+                  Exit
+                </button>
+
+              </div>
+            )}
+
+          </div>
+
+          {/* PLAYER O */}
+
+          <PlayerCard
+            name={player2Name}
+            symbol="O"
+            isPlaying={player2IsPlaying}
+          />
+
+        </div>
+
+        {/* =================================================
+            DASHBOARD
+        ================================================= */}
+
+        <div className="dashboard">
+
+          {/* LEADERBOARD */}
+
+          <section className="dashboard-section">
+
+            <div className="section-title">
+              <FaTrophy />
+              <h2>Leaderboard</h2>
+            </div>
 
             <Leaderboard refresh={refresh} />
 
           </section>
 
-          <section>
+          {/* MATCH HISTORY */}
 
-            <h2>
-              <FaHistory /> Match History
-            </h2>
+          <section className="dashboard-section">
+
+            <div className="section-title">
+              <FaHistory />
+              <h2>Match History</h2>
+            </div>
 
             <MatchHistory refresh={refresh} />
 
@@ -137,4 +298,3 @@ function GameBoard({
 }
 
 export default GameBoard;
-

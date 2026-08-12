@@ -240,6 +240,8 @@ function Home() {
       xTurn={xTurn}
       player1Name={player1Name}
       player2Name={player2Name}
+      mySymbol={mySymbol}
+      roomId={roomId}
       refresh={refresh}
       resetGame={resetGame}
       exitGame={exitGame}
