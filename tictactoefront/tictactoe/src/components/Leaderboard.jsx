@@ -1,5 +1,7 @@
+
 import React, { useEffect, useState } from "react";
-import api from "../api";
+import api from "../services/api";
+import { FaCrown, FaMedal } from "react-icons/fa";
 
 function Leaderboard({ refresh }) {
   const [leaders, setLeaders] = useState([]);
@@ -17,21 +19,55 @@ function Leaderboard({ refresh }) {
     }
   }
 
+  function getMedal(index) {
+    switch (index) {
+      case 0:
+        return "🥇";
+      case 1:
+        return "🥈";
+      case 2:
+        return "🥉";
+      default:
+        return <FaMedal color="#94a3b8" />;
+    }
+  }
+
   return (
     <div className="leaderboard">
-      <h2>🏆 Leaderboard</h2>
 
       {leaders.length === 0 ? (
-        <p>No games played yet.</p>
+        <p className="empty-message">No players yet.</p>
       ) : (
-        <ol>
-          {leaders.map((player) => (
-            <li key={player.name}>
-              {player.name} - {player.wins} wins
-            </li>
-          ))}
-        </ol>
+        leaders.map((player, index) => (
+          <div
+            key={index}
+            className={`leader-card ${
+              index < 3 ? "top-player" : ""
+            }`}
+          >
+            <div className="leader-left">
+              <span className="leader-rank">
+                {getMedal(index)}
+              </span>
+
+              <div>
+                <div className="leader-name">
+                  {player.name}
+                </div>
+
+                <div className="leader-score">
+                  {player.wins} Wins
+                </div>
+              </div>
+            </div>
+
+            {index === 0 && (
+              <FaCrown className="crown-icon" />
+            )}
+          </div>
+        ))
       )}
+
     </div>
   );
 }

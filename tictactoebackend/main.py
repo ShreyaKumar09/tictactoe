@@ -7,6 +7,7 @@ from routes.match_history import router as match_history_router
 from routes.leaderboard import router as leaderboard_router
 from routes.auth import router as auth_router
 from routes.admin import router as admin_router
+from routes.websocket import router as websocket_router
 
 app = FastAPI()
 
@@ -18,9 +19,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 def home():
     return {"message": "Welcome to Tic Tac Toe API"}
+
 
 app.include_router(player_router)
 app.include_router(game_router)
@@ -28,3 +31,4 @@ app.include_router(match_history_router)
 app.include_router(leaderboard_router)
 app.include_router(auth_router)
 app.include_router(admin_router)
+app.include_router(websocket_router)

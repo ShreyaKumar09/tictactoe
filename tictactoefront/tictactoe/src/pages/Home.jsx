@@ -1,37 +1,26 @@
 import React, { useState, useEffect } from "react";
-import "../App.css";
-import api from "../api";
-import Leaderboard from "../components/Leaderboard";
-import MatchHistory from "../components/MatchHistory";
-import { Link } from "react-router-dom";
-import ThemeToggle from "../components/ThemeToggle";
-import {
-  FaTrophy,
-  FaHistory,
-  FaSignInAlt,
-  FaDoorOpen
-} from "react-icons/fa";
-
-function Square({ value, onClick }) {
-
-  let className = "square";
-
-  if (value === "X") {
-    className += " x-square";
-  } else if (value === "O") {
-    className += " o-square";
-  }
-
-  return (
-    <button className={className} onClick={onClick}>
-      {value}
-    </button>
-  );
-}
+import api from "../services/api";
+import Lobby from "../components/Lobby";
+import GameBoard from "../components/GameBoard";
+import { useWebSocket } from "../context/WebSocketContext";
 
 function Home() {
+  // ---------------------------------------------------------
+  // GAME STATE
+  // ---------------------------------------------------------
+
   const [board, setBoard] = useState(Array(9).fill(null));
   const [xTurn, setXTurn] = useState(true);
+  const [gameStarted, setGameStarted] = useState(false);
+  const [refresh, setRefresh] = useState(0);
+
+  // ---------------------------------------------------------
+  // MULTIPLAYER STATE
+  // ---------------------------------------------------------
+
+  const [playerName, setPlayerName] = useState("");
+  const [roomId, setRoomId] = useState("");
+  const [isHost, setIsHost] = useState(false);
 
   const [player1Name, setPlayer1Name] = useState("");
   const [player2Name, setPlayer2Name] = useState("");
@@ -39,52 +28,139 @@ function Home() {
   const [player1Id, setPlayer1Id] = useState(null);
   const [player2Id, setPlayer2Id] = useState(null);
 
-  const [gameStarted, setGameStarted] = useState(false);
-  const [refresh, setRefresh] = useState(0);
+  const [mySymbol, setMySymbol] = useState("");
+
+  const { send, lastMessage } = useWebSocket();
 
   const winner = calculateWinner(board);
 
-  async function startGame() {
-    if (!player1Name || !player2Name) {
-      alert("Enter both player names");
+  // ---------------------------------------------------------
+  // WEBSOCKET
+  // ---------------------------------------------------------
+
+  useEffect(() => {
+    if (!lastMessage) return;
+
+    console.log("Received:", lastMessage);
+
+    switch (lastMessage.action) {
+      case "room_created":
+        setRoomId(lastMessage.room_id);
+
+        alert(`Room Created!\nRoom ID: ${lastMessage.room_id}`);
+        break;
+
+      case "game_start": {
+        const players = lastMessage.players;
+
+        if (players.length >= 2) {
+          setPlayer1Name(players[0].name);
+          setPlayer2Name(players[1].name);
+
+          const me = players.find(
+            (player) => player.name === playerName
+          );
+
+          if (me) {
+            setMySymbol(me.symbol);
+            console.log("My Symbol:", me.symbol);
+          }
+
+          setPlayer1Id(players[0].id ?? null);
+          setPlayer2Id(players[1].id ?? null);
+        }
+
+        setBoard(Array(9).fill(null));
+        setXTurn(lastMessage.turn === "X");
+        setGameStarted(true);
+        break;
+      }
+
+      case "update_board":
+        setBoard(lastMessage.board);
+        setXTurn(lastMessage.turn === "X");
+        break;
+
+      case "error":
+        alert(lastMessage.message);
+        break;
+
+      default:
+        console.log("Unknown message:", lastMessage);
+    }
+  }, [lastMessage, playerName]);
+
+  // ---------------------------------------------------------
+  // CREATE ROOM
+  // ---------------------------------------------------------
+
+  function createRoom() {
+    if (!playerName.trim()) {
+      alert("Enter your name");
       return;
     }
 
-    try {
-      const res1 = await api.post("/players", {
-        name: player1Name,
-      });
+    setIsHost(true);
 
-      const res2 = await api.post("/players", {
-        name: player2Name,
-      });
-
-      setPlayer1Id(res1.data.player.id);
-      setPlayer2Id(res2.data.player.id);
-
-      setGameStarted(true);
-    } catch (error) {
-      console.error(error);
-    }
+    send({
+      action: "create_room",
+      player_name: playerName,
+    });
   }
+
+  // ---------------------------------------------------------
+  // JOIN ROOM
+  // ---------------------------------------------------------
+
+  function joinRoom() {
+    if (!playerName.trim() || !roomId.trim()) {
+      alert("Enter your name and room ID");
+      return;
+    }
+
+    setIsHost(false);
+
+    send({
+      action: "join_room",
+      room_id: roomId,
+      player_name: playerName,
+    });
+  }
+
+  // ---------------------------------------------------------
+  // HANDLE CLICK
+  // ---------------------------------------------------------
 
   function handleClick(index) {
-    if (board[index] || winner) return;
+    if (winner) return;
 
-    const newBoard = [...board];
-    newBoard[index] = xTurn ? "X" : "O";
+    if (board[index]) return;
 
-    setBoard(newBoard);
-    setXTurn(!xTurn);
+    const myTurn =
+      (xTurn && mySymbol === "X") ||
+      (!xTurn && mySymbol === "O");
+
+    if (!myTurn) return;
+
+    send({
+      action: "move",
+      room_id: roomId,
+      index,
+    });
   }
 
+  // ---------------------------------------------------------
+  // SAVE GAME
+  // ---------------------------------------------------------
+
   useEffect(() => {
+    if (!winner || !gameStarted) return;
+
     async function saveGame() {
-      if (!winner) return;
-
-      const winnerId = winner === "X" ? player1Id : player2Id;
-
       try {
+        const winnerId =
+          winner === "X" ? player1Id : player2Id;
+
         await api.post("/games", {
           player1_id: player1Id,
           player2_id: player2Id,
@@ -99,25 +175,32 @@ function Home() {
       }
     }
 
-    if (gameStarted) {
-      saveGame();
-    }
+    saveGame();
   }, [winner]);
+
+  // ---------------------------------------------------------
+  // RESET
+  // ---------------------------------------------------------
 
   function resetGame() {
     setBoard(Array(9).fill(null));
     setXTurn(true);
   }
 
-  function exitGame() {
-    const confirmExit = window.confirm(
-      "Are you sure you want to exit the game?"
-    );
+  // ---------------------------------------------------------
+  // EXIT
+  // ---------------------------------------------------------
 
-    if (!confirmExit) return;
+  function exitGame() {
+    if (!window.confirm("Are you sure you want to exit?")) return;
 
     setBoard(Array(9).fill(null));
     setXTurn(true);
+
+    setGameStarted(false);
+
+    setPlayerName("");
+    setRoomId("");
 
     setPlayer1Name("");
     setPlayer2Name("");
@@ -125,97 +208,43 @@ function Home() {
     setPlayer1Id(null);
     setPlayer2Id(null);
 
-    setGameStarted(false);
+    setMySymbol("");
   }
+
+  // ---------------------------------------------------------
+  // LOBBY
+  // ---------------------------------------------------------
 
   if (!gameStarted) {
     return (
-      <div className="container">
-        <h1>Tic Tac Toe</h1>
-                
-         <div className="theme-container">
-        <ThemeToggle />
-    </div>
-        <p className="subtitle">
-  Challenge your friends and climb the leaderboard!
-</p>
-
-        <input
-          type="text"
-          placeholder="Player 1 (X)"
-          value={player1Name}
-          onChange={(e) => setPlayer1Name(e.target.value)}
-        />
-
-        <input
-          type="text"
-          placeholder="Player 2 (O)"
-          value={player2Name}
-          onChange={(e) => setPlayer2Name(e.target.value)}
-        />
-
-        <button className="start-btn" onClick={startGame}>
-          Start Game
-        </button>
-
-        {/* Admin Login Button */}
-        <div style={{ marginTop: "20px" }}>
-          <Link to="/admin-login">
-            <button className="start-btn">⚙ Admin Login</button>
-          </Link>
-        </div>
-
-        <Leaderboard refresh={refresh} />
-        <MatchHistory refresh={refresh} />
-      </div>
+      <Lobby
+        playerName={playerName}
+        setPlayerName={setPlayerName}
+        roomId={roomId}
+        setRoomId={setRoomId}
+        createRoom={createRoom}
+        joinRoom={joinRoom}
+        refresh={refresh}
+      />
     );
   }
 
+  // ---------------------------------------------------------
+  // GAME
+  // ---------------------------------------------------------
+
   return (
-    <div className="container">
-      <h1>Tic Tac Toe</h1>
-
-      <h3>
-        {player1Name} (X) vs {player2Name} (O)
-      </h3>
-      <h2>
-        <FaTrophy /> Leaderboard
-      </h2>
-      <h2>
-        <FaHistory /> Match History
-      </h2>
-      
-
-      <div className="status">
-        {winner
-          ? `Winner: ${winner === "X" ? player1Name : player2Name}`
-          : board.every((cell) => cell)
-          ? "It's a Draw!"
-          : `Turn: ${xTurn ? player1Name : player2Name}`}
-      </div>
-
-      <div className="board">
-        {board.map((value, index) => (
-          <Square
-            key={index}
-            value={value}
-            onClick={() => handleClick(index)}
-          />
-        ))}
-      </div>
-
-      {(winner || board.every((cell) => cell)) && (
-        <div className="game-buttons">
-          <button onClick={resetGame}>Restart Game</button>
-          <button onClick={exitGame}>Exit Game</button>
-        </div>
-      )}
-
-      <div className="dashboard">
-        <Leaderboard refresh={refresh} />
-        <MatchHistory refresh={refresh} />
-      </div>
-    </div>
+    <GameBoard
+      board={board}
+      winner={winner}
+      xTurn={xTurn}
+      player1Name={player1Name}
+      player2Name={player2Name}
+      refresh={refresh}
+      resetGame={resetGame}
+      exitGame={exitGame}
+      handleClick={handleClick}
+    />
   );
 }
 
@@ -234,7 +263,11 @@ function calculateWinner(board) {
   for (let line of lines) {
     const [a, b, c] = line;
 
-    if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+    if (
+      board[a] &&
+      board[a] === board[b] &&
+      board[a] === board[c]
+    ) {
       return board[a];
     }
   }
@@ -243,3 +276,4 @@ function calculateWinner(board) {
 }
 
 export default Home;
+
