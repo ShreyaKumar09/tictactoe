@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   FaUserCircle,
@@ -7,7 +6,6 @@ import {
   FaRedo,
   FaSignOutAlt,
   FaGamepad,
-  FaCircle,
 } from "react-icons/fa";
 
 import Square from "./Square";
@@ -23,9 +21,14 @@ function GameBoard({
   mySymbol,
   roomId,
   refresh,
-  resetGame,
   exitGame,
   handleClick,
+  requestRestart,
+  restartRequested,
+  restartWaiting,
+  restartRequester,
+  acceptRestart,
+  declineRestart,
 }) {
   // ---------------------------------------------------------
   // GAME STATUS
@@ -37,8 +40,11 @@ function GameBoard({
     (xTurn && mySymbol === "X") ||
     (!xTurn && mySymbol === "O");
 
-  const player1IsPlaying = xTurn && !winner && !isDraw;
-  const player2IsPlaying = !xTurn && !winner && !isDraw;
+  const player1IsPlaying =
+    xTurn && !winner && !isDraw;
+
+  const player2IsPlaying =
+    !xTurn && !winner && !isDraw;
 
   // ---------------------------------------------------------
   // PLAYER STATUS
@@ -90,7 +96,9 @@ function GameBoard({
 
         <div
           className={`player-symbol ${
-            symbol === "X" ? "symbol-x" : "symbol-o"
+            symbol === "X"
+              ? "symbol-x"
+              : "symbol-o"
           }`}
         >
           {symbol === "X" ? "❌" : "⭕"} {symbol}
@@ -99,7 +107,9 @@ function GameBoard({
         <div className="player-status">
           <span
             className={`status-dot ${
-              isPlaying ? "online" : "waiting"
+              isPlaying
+                ? "online"
+                : "waiting"
             }`}
           />
 
@@ -159,6 +169,7 @@ function GameBoard({
 
   return (
     <div className="container">
+
       <div className="game-page">
 
         {/* =================================================
@@ -166,14 +177,19 @@ function GameBoard({
         ================================================= */}
 
         <div className="game-header">
+
           <h1>
             <FaGamepad />
             Tic Tac Toe
           </h1>
 
           <div className="room-display">
-            Room: <strong>{roomId || "ONLINE"}</strong>
+            Room:{" "}
+            <strong>
+              {roomId || "ONLINE"}
+            </strong>
           </div>
+
         </div>
 
         {/* =================================================
@@ -182,7 +198,9 @@ function GameBoard({
 
         <div className="game-layout">
 
-          {/* PLAYER X */}
+          {/* =================================================
+              PLAYER X
+          ================================================= */}
 
           <PlayerCard
             name={player1Name}
@@ -196,12 +214,20 @@ function GameBoard({
 
           <div className="middle-panel">
 
+            {/* VS */}
+
             <div className="game-vs">
-              <span>{player1Name || "Player X"}</span>
+
+              <span>
+                {player1Name || "Player X"}
+              </span>
 
               <strong>VS</strong>
 
-              <span>{player2Name || "Player O"}</span>
+              <span>
+                {player2Name || "Player O"}
+              </span>
+
             </div>
 
             {/* STATUS */}
@@ -210,45 +236,120 @@ function GameBoard({
               {renderGameStatus()}
             </div>
 
-            {/* BOARD */}
+            {/* =================================================
+                REMATCH REQUEST
+            ================================================= */}
+
+            {restartRequester && (
+              <div className="restart-request">
+
+                <p>
+                  <strong>
+                    {restartRequester}
+                  </strong>{" "}
+                  wants to play again!
+                </p>
+
+                <div className="restart-request-buttons">
+
+                  <button
+                    className="restart-btn"
+                    onClick={acceptRestart}
+                  >
+                    ✅ Accept
+                  </button>
+
+                  <button
+                    className="exit-btn"
+                    onClick={declineRestart}
+                  >
+                    ❌ Decline
+                  </button>
+
+                </div>
+
+              </div>
+            )}
+
+            {/* =================================================
+                BOARD
+            ================================================= */}
 
             <div className="board">
+
               {board.map((value, index) => (
                 <Square
                   key={index}
                   value={value}
-                  onClick={() => handleClick(index)}
+                  onClick={() =>
+                    handleClick(index)
+                  }
                 />
               ))}
+
             </div>
 
-            {/* GAME BUTTONS */}
+            {/* =================================================
+                GAME BUTTONS
+            ================================================= */}
 
             {(winner || isDraw) && (
               <div className="game-buttons">
 
-                <button
-                  className="restart-btn"
-                  onClick={resetGame}
-                >
-                  <FaRedo />
-                  Restart
-                </button>
+                {/* -----------------------------------------
+                    NORMAL STATE
+                ----------------------------------------- */}
 
-                <button
-                  className="exit-btn"
-                  onClick={exitGame}
-                >
-                  <FaSignOutAlt />
-                  Exit
-                </button>
+                {!restartRequested &&
+                  !restartWaiting && (
+                    <>
+                      <button
+                        className="restart-btn"
+                        onClick={requestRestart}
+                      >
+                        <FaRedo />
+                        Play Again
+                      </button>
+
+                      <button
+                        className="exit-btn"
+                        onClick={exitGame}
+                      >
+                        <FaSignOutAlt />
+                        Exit
+                      </button>
+                    </>
+                  )}
+
+                {/* -----------------------------------------
+                    WAITING FOR OPPONENT
+                ----------------------------------------- */}
+
+                {restartRequested &&
+                  restartWaiting && (
+                    <>
+                      <div className="restart-waiting">
+                        Waiting for opponent...
+                      </div>
+
+                      <button
+                        className="exit-btn"
+                        onClick={exitGame}
+                      >
+                        <FaSignOutAlt />
+                        Exit
+                      </button>
+                    </>
+                  )}
 
               </div>
             )}
 
           </div>
 
-          {/* PLAYER O */}
+          {/* =================================================
+              PLAYER O
+          ================================================= */}
 
           <PlayerCard
             name={player2Name}
@@ -264,35 +365,54 @@ function GameBoard({
 
         <div className="dashboard">
 
-          {/* LEADERBOARD */}
+          {/* =================================================
+              LEADERBOARD
+          ================================================= */}
 
           <section className="dashboard-section">
 
             <div className="section-title">
+
               <FaTrophy />
-              <h2>Leaderboard</h2>
+
+              <h2>
+                Leaderboard
+              </h2>
+
             </div>
 
-            <Leaderboard refresh={refresh} />
+            <Leaderboard
+              refresh={refresh}
+            />
 
           </section>
 
-          {/* MATCH HISTORY */}
+          {/* =================================================
+              MATCH HISTORY
+          ================================================= */}
 
           <section className="dashboard-section">
 
             <div className="section-title">
+
               <FaHistory />
-              <h2>Match History</h2>
+
+              <h2>
+                Match History
+              </h2>
+
             </div>
 
-            <MatchHistory refresh={refresh} />
+            <MatchHistory
+              refresh={refresh}
+            />
 
           </section>
 
         </div>
 
       </div>
+
     </div>
   );
 }

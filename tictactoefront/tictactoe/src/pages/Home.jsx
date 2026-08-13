@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import api from "../services/api";
 import Lobby from "../components/Lobby";
 import GameBoard from "../components/GameBoard";
@@ -19,6 +19,12 @@ function Home() {
   // ---------------------------------------------------------
 
   const [playerName, setPlayerName] = useState("");
+  const playerNameRef = useRef("");
+
+  useEffect(() => {
+    playerNameRef.current = playerName;
+  }, [playerName]);
+
   const [roomId, setRoomId] = useState("");
   const [isHost, setIsHost] = useState(false);
 
@@ -30,9 +36,43 @@ function Home() {
 
   const [mySymbol, setMySymbol] = useState("");
 
+  // ---------------------------------------------------------
+  // RESTART STATE
+  // ---------------------------------------------------------
+
+  const [restartRequested, setRestartRequested] = useState(false);
+  const [restartWaiting, setRestartWaiting] = useState(false);
+  const [restartRequester, setRestartRequester] = useState("");
+
   const { send, lastMessage } = useWebSocket();
 
   const winner = calculateWinner(board);
+
+  // ---------------------------------------------------------
+  // RESET TO LOBBY
+  // ---------------------------------------------------------
+
+  function resetToLobby() {
+    setBoard(Array(9).fill(null));
+    setXTurn(true);
+
+    setGameStarted(false);
+
+    setPlayerName("");
+    setRoomId("");
+
+    setPlayer1Name("");
+    setPlayer2Name("");
+
+    setPlayer1Id(null);
+    setPlayer2Id(null);
+
+    setMySymbol("");
+
+    setRestartRequested(false);
+    setRestartWaiting(false);
+    setRestartRequester("");
+  }
 
   // ---------------------------------------------------------
   // WEBSOCKET
@@ -44,11 +84,23 @@ function Home() {
     console.log("Received:", lastMessage);
 
     switch (lastMessage.action) {
+      // =====================================================
+      // ROOM CREATED
+      // =====================================================
+
       case "room_created":
+
         setRoomId(lastMessage.room_id);
 
-        alert(`Room Created!\nRoom ID: ${lastMessage.room_id}`);
+        alert(
+          `Room Created!\nRoom ID: ${lastMessage.room_id}`
+        );
+
         break;
+
+      // =====================================================
+      // GAME START
+      // =====================================================
 
       case "game_start": {
         const players = lastMessage.players;
@@ -58,42 +110,205 @@ function Home() {
           setPlayer2Name(players[1].name);
 
           const me = players.find(
-            (player) => player.name === playerName
+            (player) => player.name === playerNameRef.current
           );
 
           if (me) {
             setMySymbol(me.symbol);
-            console.log("My Symbol:", me.symbol);
+
+            console.log(
+              "My Symbol:",
+              me.symbol
+            );
           }
 
-          setPlayer1Id(players[0].id ?? null);
-          setPlayer2Id(players[1].id ?? null);
+          setPlayer1Id(
+            players[0].id ?? null
+          );
+
+          setPlayer2Id(
+            players[1].id ?? null
+          );
         }
 
-        setBoard(Array(9).fill(null));
-        setXTurn(lastMessage.turn === "X");
+        setBoard(
+          Array(9).fill(null)
+        );
+
+        setXTurn(
+          lastMessage.turn === "X"
+        );
+
         setGameStarted(true);
+
+        // Clear restart state
+        setRestartRequested(false);
+        setRestartWaiting(false);
+        setRestartRequester("");
+
         break;
       }
 
+      // =====================================================
+      // BOARD UPDATE
+      // =====================================================
+
       case "update_board":
+
         setBoard(lastMessage.board);
-        setXTurn(lastMessage.turn === "X");
+
+        setXTurn(
+          lastMessage.turn === "X"
+        );
+
         break;
-      
-      case "opponent_left":
-        alert("Opponent left the game.");
+
+      // =====================================================
+      // RESTART REQUEST RECEIVED
+      // =====================================================
+
+      case "restart_request_received":
+
+        console.log(
+          "🔄 Opponent requested a rematch"
+        );
+
+        setRestartRequested(false);
+        setRestartWaiting(false);
+
+        /*
+         * We don't receive the opponent's name
+         * from the backend currently, so use
+         * the opponent's player name.
+         */
+
+        const opponentName =
+          playerName === player1Name
+            ? player2Name
+            : player1Name;
+
+        setRestartRequester(
+          opponentName || "Opponent"
+        );
+
+        break;
+
+      // =====================================================
+      // RESTART GAME
+      // =====================================================
+
+      case "restart_game":
+
+        console.log(
+          "🔄 Restarting game"
+        );
+
+        setBoard(
+          Array(9).fill(null)
+        );
+
+        setXTurn(
+          lastMessage.turn === "X"
+        );
+
+        setRestartRequested(false);
+        setRestartWaiting(false);
+        setRestartRequester("");
+
+        break;
+
+      // =====================================================
+      // RESTART DECLINED
+      // =====================================================
+
+      case "restart_declined":
+
+        setRestartRequested(false);
+        setRestartWaiting(false);
+        setRestartRequester("");
+
+        alert(
+          "Opponent declined the rematch."
+        );
+
         resetToLobby();
+
         break;
+
+      // =====================================================
+      // RESTART CANCELLED
+      // =====================================================
+
+      case "restart_cancelled":
+
+        setRestartRequested(false);
+        setRestartWaiting(false);
+        setRestartRequester("");
+
+        alert(
+          "Opponent cancelled the restart request."
+        );
+
+        resetToLobby();
+
+        break;
+
+      // =====================================================
+      // RESTART EXPIRED
+      // =====================================================
+
+      case "restart_expired":
+
+        console.log(
+          "⏰ Restart request expired"
+        );
+
+        alert(
+          "Rematch request expired. Returning to lobby."
+        );
+
+        resetToLobby();
+
+        break;
+
+      // =====================================================
+      // OPPONENT LEFT
+      // =====================================================
+
+      case "opponent_left":
+
+        alert(
+          "Opponent left the game."
+        );
+
+        resetToLobby();
+
+        break;
+
+      // =====================================================
+      // ERROR
+      // =====================================================
 
       case "error":
-        alert(lastMessage.message);
+
+        alert(
+          lastMessage.message
+        );
+
         break;
 
+      // =====================================================
+      // UNKNOWN MESSAGE
+      // =====================================================
+
       default:
-        console.log("Unknown message:", lastMessage);
+
+        console.log(
+          "Unknown message:",
+          lastMessage
+        );
     }
-  }, [lastMessage, playerName]);
+  }, [lastMessage]);
 
   // ---------------------------------------------------------
   // CREATE ROOM
@@ -118,8 +333,14 @@ function Home() {
   // ---------------------------------------------------------
 
   function joinRoom() {
-    if (!playerName.trim() || !roomId.trim()) {
-      alert("Enter your name and room ID");
+    if (
+      !playerName.trim() ||
+      !roomId.trim()
+    ) {
+      alert(
+        "Enter your name and room ID"
+      );
+
       return;
     }
 
@@ -133,7 +354,7 @@ function Home() {
   }
 
   // ---------------------------------------------------------
-  // HANDLE CLICK
+  // HANDLE BOARD CLICK
   // ---------------------------------------------------------
 
   function handleClick(index) {
@@ -159,74 +380,149 @@ function Home() {
   // ---------------------------------------------------------
 
   useEffect(() => {
-    if (!winner || !gameStarted) return;
+    if (!winner || !gameStarted) {
+      return;
+    }
 
     async function saveGame() {
       try {
         const winnerId =
-          winner === "X" ? player1Id : player2Id;
+          winner === "X"
+            ? player1Id
+            : player2Id;
 
-        await api.post("/games", {
-          player1_id: player1Id,
-          player2_id: player2Id,
-          winner_id: winnerId,
-        });
+        await api.post(
+          "/games",
+          {
+            player1_id: player1Id,
+            player2_id: player2Id,
+            winner_id: winnerId,
+          }
+        );
 
-        setRefresh((prev) => prev + 1);
+        setRefresh(
+          (prev) => prev + 1
+        );
 
-        alert("Game Saved!");
+        alert(
+          "Game Saved!"
+        );
+
       } catch (err) {
-        console.log(err);
+
+        console.log(
+          "Error saving game:",
+          err
+        );
       }
     }
 
     saveGame();
-  }, [winner]);
+
+  }, [
+    winner,
+    gameStarted,
+    player1Id,
+    player2Id,
+  ]);
 
   // ---------------------------------------------------------
-  // RESET
+  // RESET GAME
   // ---------------------------------------------------------
+
+  /*
+   * This is intentionally NOT used for the
+   * multiplayer rematch.
+   *
+   * Multiplayer restart must go through
+   * the WebSocket.
+   */
 
   function resetGame() {
-    setBoard(Array(9).fill(null));
-    setXTurn(true);
+    requestRestart();
   }
 
   // ---------------------------------------------------------
-  // EXIT
+  // EXIT GAME
   // ---------------------------------------------------------
 
   function exitGame() {
-  if (!window.confirm("Are you sure you want to exit?")) {
-    return;
+    if (
+      !window.confirm(
+        "Are you sure you want to exit?"
+      )
+    ) {
+      return;
+    }
+
+    send({
+      action: "exit_game",
+      room_id: roomId,
+    });
+
+    resetToLobby();
   }
 
-  send({
-    action: "exit_game",
-    room_id: roomId,
-  });
+  // ---------------------------------------------------------
+  // REQUEST RESTART
+  // ---------------------------------------------------------
 
-  resetToLobby();
-}
+  function requestRestart() {
+    if (!roomId) {
+      return;
+    }
 
-function resetToLobby() {
-  setBoard(Array(9).fill(null));
-  setXTurn(true);
+    /*
+     * Prevent the same player from
+     * sending multiple requests.
+     */
 
-  setGameStarted(false);
+    if (restartRequested) {
+      return;
+    }
 
-  setPlayerName("");
-  setRoomId("");
+    setRestartRequested(true);
+    setRestartWaiting(true);
 
-  setPlayer1Name("");
-  setPlayer2Name("");
+    send({
+      action: "restart_request",
+      room_id: roomId,
+    });
+  }
 
-  setPlayer1Id(null);
-  setPlayer2Id(null);
+  // ---------------------------------------------------------
+  // ACCEPT RESTART
+  // ---------------------------------------------------------
 
-  setMySymbol("");
-}
+  function acceptRestart() {
+    if (!roomId) {
+      return;
+    }
 
+    send({
+      action: "restart_accept",
+      room_id: roomId,
+    });
+
+    setRestartRequester("");
+  }
+
+  // ---------------------------------------------------------
+  // DECLINE RESTART
+  // ---------------------------------------------------------
+
+  function declineRestart() {
+    if (!roomId) {
+      return;
+    }
+
+    send({
+      action: "restart_decline",
+      room_id: roomId,
+    });
+
+    setRestartRequester("");
+  }
 
   // ---------------------------------------------------------
   // LOBBY
@@ -247,7 +543,7 @@ function resetToLobby() {
   }
 
   // ---------------------------------------------------------
-  // GAME
+  // GAME BOARD
   // ---------------------------------------------------------
 
   return (
@@ -255,17 +551,35 @@ function resetToLobby() {
       board={board}
       winner={winner}
       xTurn={xTurn}
+
       player1Name={player1Name}
       player2Name={player2Name}
+
       mySymbol={mySymbol}
+
       roomId={roomId}
+
       refresh={refresh}
+
       resetGame={resetGame}
       exitGame={exitGame}
       handleClick={handleClick}
+
+      requestRestart={requestRestart}
+
+      restartRequested={restartRequested}
+      restartWaiting={restartWaiting}
+      restartRequester={restartRequester}
+
+      acceptRestart={acceptRestart}
+      declineRestart={declineRestart}
     />
   );
 }
+
+// =========================================================
+// CALCULATE WINNER
+// =========================================================
 
 function calculateWinner(board) {
   const lines = [
@@ -295,4 +609,3 @@ function calculateWinner(board) {
 }
 
 export default Home;
-
