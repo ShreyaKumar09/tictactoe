@@ -261,7 +261,9 @@ function GameBoard({
 
                   <button
                     className="exit-btn"
-                    onClick={declineRestart}
+                    onClick={() => {
+                      // Decline will be connected next
+                    }}
                   >
                     ❌ Decline
                   </button>

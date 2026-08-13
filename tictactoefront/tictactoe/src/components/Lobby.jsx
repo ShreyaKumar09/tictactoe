@@ -19,6 +19,8 @@ function Lobby({
   setRoomId,
   createRoom,
   joinRoom,
+  isHost,
+  refresh,
 }) {
   return (
     <div className="container">

@@ -423,30 +423,23 @@ async def websocket_endpoint(websocket: WebSocket):
                 room = get_room(room_id)
 
                 if room is None:
-
-                    await websocket.send_json({
-                        "action": "error",
-                        "message": "Room not found."
-                    })
-
                     continue
-
-                success = decline_restart(
-                    room_id
-                )
-
-                if not success:
-
-                    await websocket.send_json({
-                        "action": "error",
-                        "message": "Unable to decline restart."
+                requester_socket = room["restart"]["requested_by"]
+                decline_restart(
+                    room_id)
+                
+                if requester_socket is not None:
+                    
+                    await requester_socket.send_json({
+                        "action": "restart_declined"
                     })
+                
+                await websocket.send_json({
+                    "action": "restart_declined"
+                })
 
-                    continue
-
-                print(
-                    f"❌ Rematch declined: {room_id}"
-                )
+                
+               
 
                 # Notify BOTH players
                 for player in room["players"]:

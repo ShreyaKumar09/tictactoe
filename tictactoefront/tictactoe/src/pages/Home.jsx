@@ -3,6 +3,7 @@ import api from "../services/api";
 import Lobby from "../components/Lobby";
 import GameBoard from "../components/GameBoard";
 import { useWebSocket } from "../context/WebSocketContext";
+import Toast from "../components/Toast";
 
 function Home() {
   // ---------------------------------------------------------
@@ -48,6 +49,33 @@ function Home() {
 
   const winner = calculateWinner(board);
 
+
+  // ---------------------------------------------------------
+  // TOAST STATE
+  // ---------------------------------------------------------
+
+  const [toast, setToast] = useState({
+    message: "",
+    type: "info",
+  });
+
+
+  // ---------------------------------------------------------
+  // TOAST HANDLER
+  // ---------------------------------------------------------
+
+  function showToast(message, type = "info") {
+    setToast({ message, type });
+  }
+
+  // ---------------------------------------------------------
+  // CLOSE TOAST
+  // ---------------------------------------------------------
+
+  function closeToast() {
+    setToast({ message: "", type: "info" });
+  }
+
   // ---------------------------------------------------------
   // RESET TO LOBBY
   // ---------------------------------------------------------
@@ -89,13 +117,7 @@ function Home() {
       // =====================================================
 
       case "room_created":
-
         setRoomId(lastMessage.room_id);
-
-        alert(
-          `Room Created!\nRoom ID: ${lastMessage.room_id}`
-        );
-
         break;
 
       // =====================================================
@@ -227,9 +249,11 @@ function Home() {
         setRestartWaiting(false);
         setRestartRequester("");
 
-        alert(
-          "Opponent declined the rematch."
+        showToast(
+          "Opponent declined the restart request.",
+          "info"
         );
+
 
         resetToLobby();
 
@@ -245,8 +269,9 @@ function Home() {
         setRestartWaiting(false);
         setRestartRequester("");
 
-        alert(
-          "Opponent cancelled the restart request."
+        showToast(
+          "Opponent cancelled the restart request.",
+          "info"
         );
 
         resetToLobby();
@@ -263,8 +288,9 @@ function Home() {
           "⏰ Restart request expired"
         );
 
-        alert(
-          "Rematch request expired. Returning to lobby."
+        showToast(
+          "Restart request expired. Returning to lobby.",
+          "info"
         );
 
         resetToLobby();
@@ -277,8 +303,9 @@ function Home() {
 
       case "opponent_left":
 
-        alert(
-          "Opponent left the game."
+        showToast(
+          "Opponent left the game.",
+          "info"
         );
 
         resetToLobby();
@@ -291,8 +318,9 @@ function Home() {
 
       case "error":
 
-        alert(
-          lastMessage.message
+        showToast(
+          lastMessage.message,
+          "error"
         );
 
         break;
@@ -316,7 +344,7 @@ function Home() {
 
   function createRoom() {
     if (!playerName.trim()) {
-      alert("Enter your name");
+      showToast("Enter your name", "error");
       return;
     }
 
@@ -337,9 +365,7 @@ function Home() {
       !playerName.trim() ||
       !roomId.trim()
     ) {
-      alert(
-        "Enter your name and room ID"
-      );
+      showToast("Enter your name and room ID", "error");
 
       return;
     }
@@ -404,8 +430,9 @@ function Home() {
           (prev) => prev + 1
         );
 
-        alert(
-          "Game Saved!"
+        showToast(
+          `Game saved! Winner: ${winner}`,
+          "success"
         );
 
       } catch (err) {
@@ -530,6 +557,12 @@ function Home() {
 
   if (!gameStarted) {
     return (
+      <>
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        onClose={closeToast}    
+      />
       <Lobby
         playerName={playerName}
         setPlayerName={setPlayerName}
@@ -538,7 +571,9 @@ function Home() {
         createRoom={createRoom}
         joinRoom={joinRoom}
         refresh={refresh}
+        isHost={isHost}
       />
+      </>
     );
   }
 
@@ -547,6 +582,13 @@ function Home() {
   // ---------------------------------------------------------
 
   return (
+    <>
+    <Toast
+      message={toast.message}
+      type={toast.type}
+      onClose={closeToast}    
+    />
+
     <GameBoard
       board={board}
       winner={winner}
@@ -574,6 +616,7 @@ function Home() {
       acceptRestart={acceptRestart}
       declineRestart={declineRestart}
     />
+    </>
   );
 }
 

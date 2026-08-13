@@ -1,18 +1,17 @@
 import random
 import string
+import asyncio
 
 
 rooms = {}
 
 
 # =========================================================
-# GENERATE ROOM ID
+# ROOM ID
 # =========================================================
 
 def generate_room_id():
-
     while True:
-
         room_id = "".join(
             random.choices(
                 string.ascii_uppercase + string.digits,
@@ -33,7 +32,6 @@ async def create_room(player_name, websocket):
     room_id = generate_room_id()
 
     rooms[room_id] = {
-
         "players": [
             {
                 "name": player_name,
@@ -50,13 +48,10 @@ async def create_room(player_name, websocket):
 
         "game_started": False,
 
-        # ---------------------------------------------
-        # REMATCH STATE
-        # ---------------------------------------------
-
         "restart": {
             "requested_by": None,
             "pending": False,
+            "task": None,
         },
     }
 
@@ -67,18 +62,13 @@ async def create_room(player_name, websocket):
 # JOIN ROOM
 # =========================================================
 
-async def join_room(
-    room_id,
-    player_name,
-    websocket
-):
+async def join_room(room_id, player_name, websocket):
 
     if room_id not in rooms:
         return False
 
     room = rooms[room_id]
 
-    # Room already has two players
     if len(room["players"]) >= 2:
         return False
 
@@ -100,7 +90,6 @@ async def join_room(
 # =========================================================
 
 def get_room(room_id):
-
     return rooms.get(room_id)
 
 
@@ -108,44 +97,37 @@ def get_room(room_id):
 # REMOVE PLAYER
 # =========================================================
 
-async def remove_player(
-    room_id,
-    websocket
-):
+async def remove_player(room_id, websocket):
 
-    if room_id not in rooms:
+    room = rooms.get(room_id)
+
+    if room is None:
         return None
-
-    room = rooms[room_id]
 
     current_player = None
 
-    # Find player
     for player in room["players"]:
-
         if player["socket"] == websocket:
-
             current_player = player
-
             break
 
     if current_player is None:
         return None
 
-    # Remove player
-    room["players"].remove(
-        current_player
-    )
+    room["players"].remove(current_player)
 
-    # If nobody remains,
-    # remove the entire room.
+    # Cancel restart timer
+    task = room["restart"].get("task")
+
+    if task is not None and not task.done():
+        task.cancel()
+
+    # No players left
     if len(room["players"]) == 0:
-
         del rooms[room_id]
-
         return None
 
-    # Return remaining player
+    # One player remains
     return room["players"][0]
 
 
@@ -153,65 +135,39 @@ async def remove_player(
 # REQUEST RESTART
 # =========================================================
 
-def request_restart(
-    room_id,
-    websocket
-):
+def request_restart(room_id, websocket):
 
     room = rooms.get(room_id)
 
     if room is None:
         return None
 
-    # ---------------------------------------------
-    # Check that player belongs to room
-    # ---------------------------------------------
+    current_player = None
 
-    player = None
-
-    for p in room["players"]:
-
-        if p["socket"] == websocket:
-
-            player = p
-
+    for player in room["players"]:
+        if player["socket"] == websocket:
+            current_player = player
             break
 
-    if player is None:
+    if current_player is None:
         return None
 
-    # ---------------------------------------------
-    # Same player already requested
-    # ---------------------------------------------
-
+    # Same player clicked restart again
     if (
         room["restart"]["pending"]
-        and
-        room["restart"]["requested_by"]
-        == websocket
+        and room["restart"]["requested_by"] == websocket
     ):
-
         return "already_requested"
 
-    # ---------------------------------------------
     # Opponent already requested
-    # ---------------------------------------------
-
     if (
         room["restart"]["pending"]
-        and
-        room["restart"]["requested_by"]
-        != websocket
+        and room["restart"]["requested_by"] != websocket
     ):
-
         return "both_requested"
 
-    # ---------------------------------------------
     # First request
-    # ---------------------------------------------
-
     room["restart"]["requested_by"] = websocket
-
     room["restart"]["pending"] = True
 
     return "requested"
@@ -228,28 +184,20 @@ def accept_restart(room_id):
     if room is None:
         return False
 
-    # ---------------------------------------------
-    # Reset board
-    # ---------------------------------------------
-
     room["board"] = [None] * 9
-
-    # X always starts a new game
     room["turn"] = "X"
-
-    # Clear previous winner
     room["winner"] = None
-
-    # Game remains active
     room["game_started"] = True
 
-    # ---------------------------------------------
-    # Clear restart request
-    # ---------------------------------------------
-
     room["restart"]["requested_by"] = None
-
     room["restart"]["pending"] = False
+
+    task = room["restart"].get("task")
+
+    if task is not None and not task.done():
+        task.cancel()
+
+    room["restart"]["task"] = None
 
     return True
 
@@ -266,8 +214,14 @@ def decline_restart(room_id):
         return False
 
     room["restart"]["requested_by"] = None
-
     room["restart"]["pending"] = False
+
+    task = room["restart"].get("task")
+
+    if task is not None and not task.done():
+        task.cancel()
+
+    room["restart"]["task"] = None
 
     return True
 
@@ -276,28 +230,25 @@ def decline_restart(room_id):
 # CANCEL RESTART
 # =========================================================
 
-def cancel_restart(
-    room_id,
-    websocket
-):
+def cancel_restart(room_id, websocket):
 
     room = rooms.get(room_id)
 
     if room is None:
         return False
 
-    # Only the player who requested it
-    # can cancel the request.
-    if (
-        room["restart"]["requested_by"]
-        != websocket
-    ):
-
+    if room["restart"]["requested_by"] != websocket:
         return False
 
     room["restart"]["requested_by"] = None
-
     room["restart"]["pending"] = False
+
+    task = room["restart"].get("task")
+
+    if task is not None and not task.done():
+        task.cancel()
+
+    room["restart"]["task"] = None
 
     return True
 
@@ -309,9 +260,7 @@ def cancel_restart(
 def remove_room(room_id):
 
     if room_id in rooms:
-
         del rooms[room_id]
-
         return True
 
     return False
