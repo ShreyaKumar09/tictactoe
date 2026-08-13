@@ -80,6 +80,11 @@ function Home() {
         setBoard(lastMessage.board);
         setXTurn(lastMessage.turn === "X");
         break;
+      
+      case "opponent_left":
+        alert("Opponent left the game.");
+        resetToLobby();
+        break;
 
       case "error":
         alert(lastMessage.message);
@@ -192,24 +197,36 @@ function Home() {
   // ---------------------------------------------------------
 
   function exitGame() {
-    if (!window.confirm("Are you sure you want to exit?")) return;
-
-    setBoard(Array(9).fill(null));
-    setXTurn(true);
-
-    setGameStarted(false);
-
-    setPlayerName("");
-    setRoomId("");
-
-    setPlayer1Name("");
-    setPlayer2Name("");
-
-    setPlayer1Id(null);
-    setPlayer2Id(null);
-
-    setMySymbol("");
+  if (!window.confirm("Are you sure you want to exit?")) {
+    return;
   }
+
+  send({
+    action: "exit_game",
+    room_id: roomId,
+  });
+
+  resetToLobby();
+}
+
+function resetToLobby() {
+  setBoard(Array(9).fill(null));
+  setXTurn(true);
+
+  setGameStarted(false);
+
+  setPlayerName("");
+  setRoomId("");
+
+  setPlayer1Name("");
+  setPlayer2Name("");
+
+  setPlayer1Id(null);
+  setPlayer2Id(null);
+
+  setMySymbol("");
+}
+
 
   // ---------------------------------------------------------
   // LOBBY

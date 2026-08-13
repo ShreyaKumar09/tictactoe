@@ -1,5 +1,5 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from room_manager import create_room, join_room, get_room
+from room_manager import( create_room, join_room, get_room ,remove_player)
 import json
 
 router = APIRouter()
@@ -164,6 +164,20 @@ async def websocket_endpoint(websocket: WebSocket):
                         "action": "update_board",
                         "board": room["board"],
                         "turn": room["turn"]
+                    })
+                
+            # -------------------------------------------------
+            # EXIT GAME
+            # -------------------------------------------------
+                
+            elif action == "exit_game":
+                 remaining_player = await remove_player(
+                    message["room_id"],
+                     websocket
+                )
+                 if remaining_player is not None:
+                    await remaining_player["socket"].send_json({
+                        "action": "opponent_left"
                     })
 
     except WebSocketDisconnect:

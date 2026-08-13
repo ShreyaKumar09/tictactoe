@@ -66,3 +66,29 @@ async def join_room(room_id, player_name, websocket):
 
 def get_room(room_id):
     return rooms.get(room_id)
+
+
+async def remove_player(room_id, websocket):
+
+    if room_id not in rooms:
+        return None
+
+    room = rooms[room_id]
+
+    current_player = None
+
+    for player in room["players"]:
+        if player["socket"] == websocket:
+            current_player = player
+            break
+
+    if current_player is None:
+        return None
+
+    room["players"].remove(current_player)
+
+    if len(room["players"]) == 0:
+        del rooms[room_id]
+        return None
+
+    return room["players"][0]
