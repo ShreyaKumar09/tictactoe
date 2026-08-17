@@ -1,13 +1,12 @@
-
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   FaGamepad,
-  FaUser,
-  FaKey,
   FaRocket,
   FaSignInAlt,
   FaCog,
+  FaCopy,
+  FaCheck,
 } from "react-icons/fa";
 
 import ThemeToggle from "./ThemeToggle";
@@ -22,6 +21,18 @@ function Lobby({
   isHost,
   refresh,
 }) {
+  const [copied, setCopied] = useState(false);
+
+  function copyRoomCode() {
+    navigator.clipboard.writeText(roomId);
+
+    setCopied(true);
+
+    setTimeout(() => {
+      setCopied(false);
+    }, 2000);
+  }
+
   return (
     <div className="container">
       <div className="lobby-card">
@@ -38,6 +49,7 @@ function Lobby({
           Play online with your friends anywhere in the world.
         </p>
 
+        {/* Player Name */}
         <input
           type="text"
           placeholder="👤 Enter your name"
@@ -45,6 +57,7 @@ function Lobby({
           onChange={(e) => setPlayerName(e.target.value)}
         />
 
+        {/* Create Room */}
         <button
           className="start-btn"
           onClick={createRoom}
@@ -52,15 +65,50 @@ function Lobby({
           <FaRocket /> Create Room
         </button>
 
+        {/* Show Room Code only after creating */}
+        {roomId && isHost && (
+          <div className="created-room">
+
+            <div className="created-room-title">
+              Room Created
+            </div>
+
+            <div className="room-code-row">
+
+              <span className="room-code">
+                {roomId}
+              </span>
+
+              <button
+                className="copy-room-btn"
+                onClick={copyRoomCode}
+              >
+                {copied ? <FaCheck /> : <FaCopy />}
+                &nbsp;
+                {copied ? "Copied" : "Copy"}
+              </button>
+
+            </div>
+
+            <p className="room-share-text">
+              Share this code with your friend.
+            </p>
+
+          </div>
+        )}
+
         <div className="or">
           ───── OR ─────
         </div>
 
+        {/* Join Room */}
         <input
           type="text"
           placeholder="🔑 Enter Room Code"
           value={roomId}
-          onChange={(e) => setRoomId(e.target.value.toUpperCase())}
+          onChange={(e) =>
+            setRoomId(e.target.value.toUpperCase())
+          }
         />
 
         <button
@@ -74,9 +122,7 @@ function Lobby({
           to="/admin-login"
           style={{ textDecoration: "none" }}
         >
-          <button
-            className="start-btn admin-btn"
-          >
+          <button className="start-btn admin-btn">
             <FaCog /> Admin Login
           </button>
         </Link>
@@ -87,4 +133,3 @@ function Lobby({
 }
 
 export default Lobby;
-
