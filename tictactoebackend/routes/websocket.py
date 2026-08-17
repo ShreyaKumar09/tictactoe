@@ -416,7 +416,7 @@ async def websocket_endpoint(websocket: WebSocket):
             # DECLINE RESTART
             # =================================================
 
-            elif action == "restart_decline":
+            elif action == "decline_restart":
 
                 room_id = message["room_id"]
 

@@ -101,7 +101,7 @@ function GameBoard({
               : "symbol-o"
           }`}
         >
-          {symbol === "X" ? "❌" : "⭕"} {symbol}
+          {symbol === "X" ? "❌" : "⭕"} 
         </div>
 
         <div className="player-status">
@@ -261,9 +261,7 @@ function GameBoard({
 
                   <button
                     className="exit-btn"
-                    onClick={() => {
-                      // Decline will be connected next
-                    }}
+                    onClick={declineRestart}
                   >
                     ❌ Decline
                   </button>

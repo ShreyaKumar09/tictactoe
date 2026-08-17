@@ -4,7 +4,7 @@ import Lobby from "../components/Lobby";
 import GameBoard from "../components/GameBoard";
 import { useWebSocket } from "../context/WebSocketContext";
 import Toast from "../components/Toast";
-
+import ExitModal from "../components/ExitModal";
 function Home() {
   // ---------------------------------------------------------
   // GAME STATE
@@ -36,6 +36,7 @@ function Home() {
   const [player2Id, setPlayer2Id] = useState(null);
 
   const [mySymbol, setMySymbol] = useState("");
+  const [showExitModal, setShowExitModal] = useState(false);
 
   // ---------------------------------------------------------
   // RESTART STATE
@@ -474,21 +475,24 @@ function Home() {
   // ---------------------------------------------------------
 
   function exitGame() {
-    if (
-      !window.confirm(
-        "Are you sure you want to exit?"
-      )
-    ) {
-      return;
-    }
-
+    setShowExitModal(true);
+  }
+    
+      
+      
+    
+  function confirmExitGame() {
     send({
       action: "exit_game",
       room_id: roomId,
     });
+    setShowExitModal(false);
 
     resetToLobby();
   }
+  function cancelExitGame() {
+  setShowExitModal(false);
+  } 
 
   // ---------------------------------------------------------
   // REQUEST RESTART
@@ -544,7 +548,7 @@ function Home() {
     }
 
     send({
-      action: "restart_decline",
+      action: "decline_restart",
       room_id: roomId,
     });
 
@@ -616,6 +620,12 @@ function Home() {
       acceptRestart={acceptRestart}
       declineRestart={declineRestart}
     />
+
+    <ExitModal
+      open={showExitModal}
+      onConfirm={confirmExitGame}
+      onCancel={cancelExitGame}
+      />
     </>
   );
 }
