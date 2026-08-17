@@ -1,6 +1,16 @@
 import { Navigate, useNavigate } from "react-router-dom";
 import { isAuthenticated, logout } from "../services/auth";
 import { clearMatchHistory } from "../services/admin";
+import AdminSidebar from "../components/admin/AdminSidebar";
+import AdminNavbar from "../components/admin/AdminNavbar";
+import {
+  FaUsers,
+  FaGamepad,
+  FaTrophy,
+  FaCircle,
+} from "react-icons/fa";
+import StatCard from "../components/admin/StatCard";
+
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -35,10 +45,41 @@ function AdminDashboard() {
   }
 
   return (
-    <div className="container">
-      <h1>Admin Dashboard</h1>
+    <div className="admin-layout">
+    <AdminSidebar onLogout={handleLogout} />
 
-      <p>Welcome Admin 👋</p>
+    <main className="admin-content">
+      <AdminNavbar />
+
+      <div className="stats-grid">
+        <StatCard
+        icon={<FaUsers />}
+        title="Total Players"
+         value="--"
+          />
+          <StatCard
+          icon={<FaGamepad />}
+          title="Games Played"
+           value="--"
+           />
+           <StatCard
+            icon={<FaTrophy />}
+            title="Total Wins"
+             value="--"
+             />
+             <StatCard
+              icon={<FaCircle />}
+              title="Active Rooms"
+              value="--"
+               />
+               </div>
+
+      <div className="admin-action-card">
+        <h2>🗑 Clear Match History</h2>
+        <p>
+          Delete all stored match history from the database.This action cannot be undone.
+
+        </p>
 
       <button
         className="start-btn"
@@ -46,16 +87,11 @@ function AdminDashboard() {
       >
         🗑 Clear Match History
       </button>
+      </div>
+      </main>
+        
 
-      <br />
-      <br />
-
-      <button
-        className="start-btn"
-        onClick={handleLogout}
-      >
-        Logout
-      </button>
+      
     </div>
   );
 }
