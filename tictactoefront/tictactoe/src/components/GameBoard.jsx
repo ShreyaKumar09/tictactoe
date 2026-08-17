@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   FaUserCircle,
   FaTrophy,
@@ -45,6 +45,30 @@ function GameBoard({
 
   const player2IsPlaying =
     !xTurn && !winner && !isDraw;
+
+  // --------------------------------------------------------
+  //Timer----------------------------------------------------
+  // --------------------------------------------------------
+  const [restartTime, setRestartTime] = useState(30);
+
+  useEffect(() => {
+  if (!restartRequester) return;
+
+  setRestartTime(30);
+
+  const timer = setInterval(() => {
+    setRestartTime((prev) => {
+      if (prev <= 1) {
+        clearInterval(timer);
+        return 0;
+      }
+      return prev - 1;
+    });
+  }, 1000);
+
+  return () => clearInterval(timer);
+}, [restartRequester]);
+
 
   // ---------------------------------------------------------
   // PLAYER STATUS
@@ -242,34 +266,39 @@ function GameBoard({
 
             {restartRequester && (
               <div className="restart-request">
-
+                <h3>🔄 Rematch Request</h3>
                 <p>
-                  <strong>
-                    {restartRequester}
-                  </strong>{" "}
-                  wants to play again!
-                </p>
-
-                <div className="restart-request-buttons">
-
-                  <button
-                    className="restart-btn"
-                    onClick={acceptRestart}
-                  >
-                    ✅ Accept
-                  </button>
-
-                  <button
-                    className="exit-btn"
-                    onClick={declineRestart}
-                  >
-                    ❌ Decline
-                  </button>
-
-                </div>
-
-              </div>
-            )}
+                  <strong>{restartRequester}</strong> wants to play again!
+                  </p>
+                  <div className="restart-countdown">
+                    <div className="countdown-text">
+                    ⏳ {restartTime}s remaining
+                      </div>
+                      <div className="countdown-bar">
+                         <div
+                         className="countdown-fill"
+                         style={{
+                          width: `${(restartTime / 30) * 100}%`,
+                        }}
+                        />
+                        </div>
+                        </div>
+                        <div className="restart-request-buttons">
+                          <button
+                          className="restart-btn"
+                          onClick={acceptRestart}
+                          >
+                            ✅ Accept
+                             </button>
+                             <button
+                              className="exit-btn"
+                              onClick={declineRestart}
+                               >
+                                ❌ Decline
+                                </button>
+                                </div>
+                                 </div>
+                                )}
 
             {/* =================================================
                 BOARD
