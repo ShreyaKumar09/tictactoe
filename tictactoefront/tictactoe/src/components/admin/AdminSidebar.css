@@ -20,6 +20,18 @@
   font-size: 14px;
 }
 
+.sidebar-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 18px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(59, 130, 246, 0.1);
+  color: #dbeafe;
+  font-size: 13px;
+}
+
 .sidebar-menu {
   display: flex;
   flex-direction: column;

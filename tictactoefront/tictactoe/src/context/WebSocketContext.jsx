@@ -45,11 +45,21 @@ export function WebSocketProvider({ children }) {
       console.error("❌ WebSocket Error:", error);
     };
 
-    // Cleanup when component unmounts
     return () => {
-      socket.close();
+      const currentSocket = socketRef.current;
+
+      if (currentSocket && currentSocket.readyState !== WebSocket.CLOSED) {
+        currentSocket.close();
+      }
+
+      socketRef.current = null;
+      setLastMessage(null);
     };
   }, []);
+
+  function clearLastMessage() {
+    setLastMessage(null);
+  }
 
   function send(data) {
     if (
@@ -67,6 +77,7 @@ export function WebSocketProvider({ children }) {
       value={{
         connected,
         lastMessage,
+        clearLastMessage,
         send,
       }}
     >

@@ -51,6 +51,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 room_id = await create_room(
                     message["player_name"],
+                    message.get("player_id"),
                     websocket
                 )
 
@@ -74,6 +75,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 success = await join_room(
                     message["room_id"],
                     message["player_name"],
+                    message.get("player_id"),
                     websocket
                 )
 
@@ -96,6 +98,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 players = [
                     {
+                        "id": player.get("id"),
                         "name": player["name"],
                         "symbol": player["symbol"]
                     }
@@ -312,7 +315,9 @@ async def websocket_endpoint(websocket: WebSocket):
                         if player["socket"] != websocket:
 
                             await player["socket"].send_json({
-                                "action": "restart_request_received"
+                                "action": "restart_request_received",
+                                "requester_name": current_player["name"],
+                                "room_id": room_id,
                             })
 
                             break
@@ -424,29 +429,27 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 if room is None:
                     continue
+
                 requester_socket = room["restart"]["requested_by"]
-                decline_restart(
-                    room_id)
-                
-                if requester_socket is not None:
-                    
-                    await requester_socket.send_json({
-                        "action": "restart_declined"
-                    })
-                
-                await websocket.send_json({
-                    "action": "restart_declined"
-                })
+                decline_restart(room_id)
 
-                
-               
-
-                # Notify BOTH players
                 for player in room["players"]:
+                    try:
+                        await player["socket"].send_json({
+                            "action": "restart_declined"
+                        })
+                    except Exception as e:
+                        print("❌ Could not notify player on decline:", e)
 
-                    await player["socket"].send_json({
-                        "action": "restart_declined"
-                    })
+                if requester_socket is not None:
+                    try:
+                        await requester_socket.send_json({
+                            "action": "restart_declined"
+                        })
+                    except Exception as e:
+                        print("❌ Could not notify requester on decline:", e)
+
+                remove_room(room_id)
 
             # =================================================
             # CANCEL RESTART

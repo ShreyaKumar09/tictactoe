@@ -27,13 +27,14 @@ def generate_room_id():
 # CREATE ROOM
 # =========================================================
 
-async def create_room(player_name, websocket):
+async def create_room(player_name, player_id, websocket):
 
     room_id = generate_room_id()
 
     rooms[room_id] = {
         "players": [
             {
+                "id": player_id,
                 "name": player_name,
                 "socket": websocket,
                 "symbol": "X",
@@ -62,7 +63,7 @@ async def create_room(player_name, websocket):
 # JOIN ROOM
 # =========================================================
 
-async def join_room(room_id, player_name, websocket):
+async def join_room(room_id, player_name, player_id, websocket):
 
     if room_id not in rooms:
         return False
@@ -74,6 +75,7 @@ async def join_room(room_id, player_name, websocket):
 
     room["players"].append(
         {
+            "id": player_id,
             "name": player_name,
             "socket": websocket,
             "symbol": "O",

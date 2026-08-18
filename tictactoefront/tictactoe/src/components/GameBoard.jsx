@@ -29,6 +29,8 @@ function GameBoard({
   restartRequester,
   acceptRestart,
   declineRestart,
+  showResultModal,
+  setShowResultModal,
 }) {
   // ---------------------------------------------------------
   // GAME STATUS
@@ -192,7 +194,40 @@ function GameBoard({
   // ---------------------------------------------------------
 
   return (
-    <div className="container">
+    <>
+      {showResultModal && (
+        <div className="modal-overlay">
+          <div className="result-modal">
+            <h2>
+              {winner
+                ? winner === mySymbol
+                  ? "🏆 You Won!"
+                  : "😔 You Lost!"
+                : "🤝 It\'s a Draw!"}
+            </h2>
+            <p>
+              {winner
+                ? winner === mySymbol
+                  ? "Your strategy paid off this round."
+                  : "Nice try — another round is ready when you are."
+                : "No winner this time, but the next match is just a click away."}
+            </p>
+            <div className="exit-modal-buttons">
+              <button className="restart-btn" onClick={requestRestart}>
+                Play Again
+              </button>
+              <button className="exit-btn" onClick={() => {
+                setShowResultModal(false);
+                exitGame();
+              }}>
+                Exit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="container">
 
       <div className="game-page">
 
@@ -443,6 +478,7 @@ function GameBoard({
       </div>
 
     </div>
+    </>
   );
 }
 

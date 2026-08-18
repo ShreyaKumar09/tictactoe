@@ -21,6 +21,7 @@ function Home() {
 
   const [playerName, setPlayerName] = useState("");
   const playerNameRef = useRef("");
+  const saveAttemptKeyRef = useRef("");
 
   useEffect(() => {
     playerNameRef.current = playerName;
@@ -37,6 +38,8 @@ function Home() {
 
   const [mySymbol, setMySymbol] = useState("");
   const [showExitModal, setShowExitModal] = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false);
+  const completedMatchKeyRef = useRef("");
 
   // ---------------------------------------------------------
   // RESTART STATE
@@ -84,23 +87,21 @@ function Home() {
   function resetToLobby() {
     setBoard(Array(9).fill(null));
     setXTurn(true);
-
     setGameStarted(false);
-
+    setShowExitModal(false);
+    setShowResultModal(false);
     setPlayerName("");
     setRoomId("");
-
     setPlayer1Name("");
     setPlayer2Name("");
-
     setPlayer1Id(null);
     setPlayer2Id(null);
-
     setMySymbol("");
-
     setRestartRequested(false);
     setRestartWaiting(false);
     setRestartRequester("");
+    saveAttemptKeyRef.current = "";
+    completedMatchKeyRef.current = "";
   }
 
   // ---------------------------------------------------------
@@ -196,22 +197,18 @@ function Home() {
           "🔄 Opponent requested a rematch"
         );
 
+        setShowResultModal(false);
         setRestartRequested(false);
         setRestartWaiting(false);
 
-        /*
-         * We don't receive the opponent's name
-         * from the backend currently, so use
-         * the opponent's player name.
-         */
-
-        const opponentName =
-          playerName === player1Name
+        const requesterName =
+          lastMessage.requester_name ||
+          (playerName === player1Name
             ? player2Name
-            : player1Name;
+            : player1Name);
 
         setRestartRequester(
-          opponentName || "Opponent"
+          requesterName || "Opponent"
         );
 
         break;
@@ -226,17 +223,14 @@ function Home() {
           "🔄 Restarting game"
         );
 
-        setBoard(
-          Array(9).fill(null)
-        );
-
-        setXTurn(
-          lastMessage.turn === "X"
-        );
-
+        setShowResultModal(false);
+        setBoard(Array(9).fill(null));
+        setXTurn(lastMessage.turn === "X");
         setRestartRequested(false);
         setRestartWaiting(false);
         setRestartRequester("");
+        saveAttemptKeyRef.current = "";
+        completedMatchKeyRef.current = "";
 
         break;
 
@@ -246,15 +240,17 @@ function Home() {
 
       case "restart_declined":
 
+        setShowResultModal(false);
         setRestartRequested(false);
         setRestartWaiting(false);
         setRestartRequester("");
+        saveAttemptKeyRef.current = "";
+        completedMatchKeyRef.current = "";
 
         showToast(
           "Opponent declined the restart request.",
           "info"
         );
-
 
         resetToLobby();
 
@@ -266,9 +262,12 @@ function Home() {
 
       case "restart_cancelled":
 
+        setShowResultModal(false);
         setRestartRequested(false);
         setRestartWaiting(false);
         setRestartRequester("");
+        saveAttemptKeyRef.current = "";
+        completedMatchKeyRef.current = "";
 
         showToast(
           "Opponent cancelled the restart request.",
@@ -340,28 +339,61 @@ function Home() {
   }, [lastMessage]);
 
   // ---------------------------------------------------------
+  // PLAYER RECORDS
+  // ---------------------------------------------------------
+
+  async function ensurePlayerExists(name) {
+    const trimmedName = name.trim();
+
+    if (!trimmedName) {
+      return null;
+    }
+
+    const response = await api.post("/players", {
+      name: trimmedName,
+    });
+
+    return response.data.player.id;
+  }
+
+  // ---------------------------------------------------------
   // CREATE ROOM
   // ---------------------------------------------------------
 
-  function createRoom() {
+  async function createRoom() {
     if (!playerName.trim()) {
       showToast("Enter your name", "error");
       return;
     }
 
-    setIsHost(true);
+    try {
+      const playerId = await ensurePlayerExists(playerName);
 
-    send({
-      action: "create_room",
-      player_name: playerName,
-    });
+      if (!playerId) {
+        showToast("Unable to create player record.", "error");
+        return;
+      }
+
+      setIsHost(true);
+      setPlayer1Id(playerId);
+      setPlayer2Id(null);
+
+      send({
+        action: "create_room",
+        player_name: playerName,
+        player_id: playerId,
+      });
+    } catch (error) {
+      console.error(error);
+      showToast("Unable to create player record.", "error");
+    }
   }
 
   // ---------------------------------------------------------
   // JOIN ROOM
   // ---------------------------------------------------------
 
-  function joinRoom() {
+  async function joinRoom() {
     if (
       !playerName.trim() ||
       !roomId.trim()
@@ -371,13 +403,28 @@ function Home() {
       return;
     }
 
-    setIsHost(false);
+    try {
+      const playerId = await ensurePlayerExists(playerName);
 
-    send({
-      action: "join_room",
-      room_id: roomId,
-      player_name: playerName,
-    });
+      if (!playerId) {
+        showToast("Unable to create player record.", "error");
+        return;
+      }
+
+      setIsHost(false);
+      setPlayer1Id(null);
+      setPlayer2Id(playerId);
+
+      send({
+        action: "join_room",
+        room_id: roomId,
+        player_name: playerName,
+        player_id: playerId,
+      });
+    } catch (error) {
+      console.error(error);
+      showToast("Unable to join room.", "error");
+    }
   }
 
   // ---------------------------------------------------------
@@ -407,51 +454,71 @@ function Home() {
   // ---------------------------------------------------------
 
   useEffect(() => {
-    if (!winner || !gameStarted) {
+    const hasGameResult = Boolean(winner) || (!winner && board.every(Boolean));
+
+    if (!gameStarted || !hasGameResult) {
+      setShowResultModal(false);
+      return;
+    }
+
+    const resultKey = `${roomId}-${winner || "draw"}-${player1Id ?? "n"}-${player2Id ?? "n"}-${board.join("")}`;
+
+    if (completedMatchKeyRef.current === resultKey) {
+      setShowResultModal(true);
+      return;
+    }
+
+    completedMatchKeyRef.current = resultKey;
+    saveAttemptKeyRef.current = resultKey;
+    setShowResultModal(true);
+
+    if (!isHost) {
       return;
     }
 
     async function saveGame() {
       try {
-        const winnerId =
+        const finalWinnerId =
           winner === "X"
             ? player1Id
-            : player2Id;
+            : winner === "O"
+              ? player2Id
+              : null;
 
-        await api.post(
-          "/games",
-          {
-            player1_id: player1Id,
-            player2_id: player2Id,
-            winner_id: winnerId,
-          }
-        );
+        if (!player1Id || !player2Id) {
+          return;
+        }
 
-        setRefresh(
-          (prev) => prev + 1
-        );
+        await api.post("/games", {
+          match_key: resultKey,
+          player1_id: player1Id,
+          player2_id: player2Id,
+          winner_id: finalWinnerId,
+        });
 
+        setRefresh((prev) => prev + 1);
         showToast(
-          `Game saved! Winner: ${winner}`,
+          winner
+            ? `Game saved! Winner: ${winner}`
+            : "Game saved! Result: Draw",
           "success"
         );
-
       } catch (err) {
-
-        console.log(
-          "Error saving game:",
-          err
-        );
+        console.log("Error saving game:", err);
+        saveAttemptKeyRef.current = "";
+        completedMatchKeyRef.current = "";
       }
     }
 
     saveGame();
-
   }, [
     winner,
+    board,
     gameStarted,
     player1Id,
     player2Id,
+    roomId,
+    isHost,
   ]);
 
   // ---------------------------------------------------------
@@ -597,35 +664,29 @@ function Home() {
       board={board}
       winner={winner}
       xTurn={xTurn}
-
       player1Name={player1Name}
       player2Name={player2Name}
-
       mySymbol={mySymbol}
-
       roomId={roomId}
-
       refresh={refresh}
-
       resetGame={resetGame}
       exitGame={exitGame}
       handleClick={handleClick}
-
       requestRestart={requestRestart}
-
       restartRequested={restartRequested}
       restartWaiting={restartWaiting}
       restartRequester={restartRequester}
-
       acceptRestart={acceptRestart}
       declineRestart={declineRestart}
+      showResultModal={showResultModal}
+      setShowResultModal={setShowResultModal}
     />
 
     <ExitModal
       open={showExitModal}
       onConfirm={confirmExitGame}
       onCancel={cancelExitGame}
-      />
+    />
     </>
   );
 }

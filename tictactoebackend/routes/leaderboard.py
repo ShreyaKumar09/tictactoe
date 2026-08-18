@@ -17,6 +17,7 @@ def leaderboard(db: Session = Depends(get_db)):
             func.count(Game.winner_id).label("wins")
         )
         .join(Game, Player.id == Game.winner_id)
+        .filter(Game.winner_id.isnot(None))
         .group_by(Player.id, Player.name)
         .order_by(func.count(Game.winner_id).desc())
         .all()
