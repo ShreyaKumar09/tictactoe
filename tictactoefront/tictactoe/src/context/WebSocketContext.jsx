@@ -48,9 +48,8 @@ export function WebSocketProvider({ children }) {
     return () => {
       const currentSocket = socketRef.current;
 
-      if (currentSocket && currentSocket.readyState !== WebSocket.CLOSED) {
-        currentSocket.close();
-      }
+      if (currentSocket && (currentSocket.readyState === WebSocket.CONNECTING || currentSocket.readyState === WebSocket.OPEN)
+      ) { currentSocket.close(1000, "Component unmounted");}
 
       socketRef.current = null;
       setLastMessage(null);

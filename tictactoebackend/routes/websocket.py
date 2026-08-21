@@ -218,6 +218,23 @@ async def websocket_endpoint(websocket: WebSocket):
                         "board": room["board"],
                         "turn": room["turn"]
                     })
+                    
+            # =================================================
+            # GAME SAVED
+            # =================================================
+
+            elif action == "game_saved":
+                room = get_room(message["room_id"])
+
+                if room is None:
+                    continue
+
+                print(f"✅ Game saved notification: {message['room_id']}")
+
+                for player in room["players"]:
+                    await player["socket"].send_json({
+                        "action": "game_saved"
+                    })
 
             # =================================================
             # EXIT GAME

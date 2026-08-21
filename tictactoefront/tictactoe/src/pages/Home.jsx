@@ -186,6 +186,14 @@ function Home() {
         );
 
         break;
+        
+      case "game_saved":
+        console.log("✅ Refreshing leaderboard and match history");
+
+        setRefresh((prev) => prev + 1);
+
+        break;
+
 
       // =====================================================
       // RESTART REQUEST RECEIVED
@@ -495,8 +503,11 @@ function Home() {
           player2_id: player2Id,
           winner_id: finalWinnerId,
         });
+        send({
+          action: "game_saved",
+          room_id: roomId,
+        });
 
-        setRefresh((prev) => prev + 1);
         showToast(
           winner
             ? `Game saved! Winner: ${winner}`
