@@ -5,76 +5,63 @@ import { login } from "../services/auth";
 
 function AdminLogin() {
   const navigate = useNavigate();
-
   const [username, setUsername] = useState("");
-
   const [password, setPassword] = useState("");
-
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   async function handleLogin(e) {
     e.preventDefault();
-
     setLoading(true);
+    setError("");
 
     try {
-      const data = await login(
-        username,
-        password
-      );
-
-      localStorage.setItem(
-        "token",
-        data.access_token
-      );
-
-      alert("Login Successful!");
-
+      const data = await login(username, password);
+      sessionStorage.setItem("token", data.access_token);
       navigate("/admin-dashboard");
     } catch (err) {
-      alert("Invalid Username or Password");
+      console.error(err);
+      setError("Invalid username or password.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   }
 
   return (
-    <div className="container">
-      <h1>Admin Login</h1>
+    <div className="admin-login-shell">
+      <div className="admin-login-card">
+        <h1>Admin Login</h1>
 
-      <form onSubmit={handleLogin}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) =>
-            setUsername(e.target.value)
-          }
-        />
+        <form className="admin-form" onSubmit={handleLogin}>
+          <div className="admin-field">
+            <label htmlFor="admin-username">Username</label>
+            <input
+              id="admin-username"
+              type="text"
+              placeholder="Enter username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </div>
 
-        <br />
+          <div className="admin-field">
+            <label htmlFor="admin-password">Password</label>
+            <input
+              id="admin-password"
+              type="password"
+              placeholder="Enter password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) =>
-            setPassword(e.target.value)
-          }
-        />
+          {error && <p className="admin-error">{error}</p>}
 
-        <br />
-
-        <button
-          className="start-btn"
-          type="submit"
-          disabled={loading}
-        >
-          {loading
-            ? "Logging in..."
-            : "Login"}
-        </button>
-      </form>
+          <button className="start-btn" type="submit" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

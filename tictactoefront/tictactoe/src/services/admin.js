@@ -1,7 +1,7 @@
-import api from "../api";
+import api from "../services/api";
 
 export async function clearMatchHistory() {
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
 
   const response = await api.delete("/admin/match-history", {
     headers: {

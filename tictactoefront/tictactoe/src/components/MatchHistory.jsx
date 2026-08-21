@@ -1,5 +1,7 @@
+
 import React, { useEffect, useState } from "react";
-import api from "../api";
+import api from "../services/api";
+import { FaTrophy, FaTimes } from "react-icons/fa";
 
 function MatchHistory({ refresh }) {
   const [games, setGames] = useState([]);
@@ -19,31 +21,44 @@ function MatchHistory({ refresh }) {
 
   return (
     <div className="history">
-      <h2>📜 Match History</h2>
 
       {games.length === 0 ? (
-        <p>No games played yet.</p>
+        <p className="empty-message">No games played yet.</p>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Player 1</th>
-              <th>Player 2</th>
-              <th>Winner</th>
-            </tr>
-          </thead>
+        games.map((game) => (
+          <div
+            className="match-card"
+            key={game.id}
+          >
 
-          <tbody>
-            {games.map((game) => (
-              <tr key={game.id}>
-                <td>{game.player1}</td>
-                <td>{game.player2}</td>
-                <td>{game.winner}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            <div className="players-row">
+
+              <div className="player-box">
+                <strong>{game.player1}</strong>
+                <span>X</span>
+              </div>
+
+              <div className="vs">
+                <FaTimes />
+              </div>
+
+              <div className="player-box">
+                <strong>{game.player2}</strong>
+                <span>O</span>
+              </div>
+
+            </div>
+
+            <div className="winner-row">
+              <FaTrophy />
+              Winner:
+              <strong>{game.winner}</strong>
+            </div>
+
+          </div>
+        ))
       )}
+
     </div>
   );
 }
