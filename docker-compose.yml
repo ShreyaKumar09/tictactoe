@@ -37,8 +37,8 @@ services:
 
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: tictactoe
+      POSTGRES_PASSWORD: root123
+      POSTGRES_DB: tictactoe_db
 
     ports:
       - "5432:5432"

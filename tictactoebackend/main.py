@@ -10,6 +10,17 @@ from routes.auth import router as auth_router
 from routes.admin import router as admin_router
 from routes.websocket import router as websocket_router
 
+from database import Base, engine
+
+# Import models so SQLAlchemy registers them
+from models.player import Player
+from models.game import Game
+from models.admin import Admin
+
+Base.metadata.create_all(bind=engine)
+
+from fastapi import FastAPI
+
 app = FastAPI()
 
 app.add_middleware(
