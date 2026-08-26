@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./tictactoebackend
+    container_name: tictactoe-backend
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - ./tictactoebackend:/app
+
+    env_file:
+      - ./tictactoebackend/.env
+
+    depends_on:
+      - postgres
+
+  frontend:
+    build: ./tictactoefront/tictactoe
+    container_name: tictactoe-frontend
+
+    ports:
+      - "5173:5173"
+
+    volumes:
+      - ./tictactoefront/tictactoe:/app
+      - /app/node_modules
+
+    depends_on:
+      - backend
+
+  postgres:
+    image: postgres:16
+    container_name: tictactoe-postgres
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: tictactoe
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
