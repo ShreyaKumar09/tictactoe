@@ -17,7 +17,7 @@ def get_match_history(db: Session = Depends(get_db)):
             "id": game.id,
             "player1": game.player1.name,
             "player2": game.player2.name,
-            "winner": game.winner.name,
+            "winner": game.winner.name if game.winner else "Draw",
         }
         for game in games
     ]

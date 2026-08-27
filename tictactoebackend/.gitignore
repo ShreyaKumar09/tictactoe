@@ -1,4 +1,36 @@
-.env
-.venv
+# Python
 __pycache__/
+*.pyc
+*.pyo
+
+# Virtual Environment
+venv/
+.env
+*.env
+# Environment
+.env
+**/.env
+
+# Logs
+*.log
 app.log
+
+# Database
+*.db
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Node
+node_modules/
+
+# Build
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
