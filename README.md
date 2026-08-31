@@ -1,76 +1,345 @@
 # 🎮 Tic Tac Toe Multiplayer
 
-A full-stack real-time multiplayer Tic Tac Toe application built using **React**, **FastAPI**, **PostgreSQL**, **WebSockets**, and **Docker**. Players can create or join game rooms, play in real time, view match history and leaderboard, while administrators can manage the application through a secure dashboard.
+A full-stack real-time multiplayer Tic Tac Toe web application built using **React**, **FastAPI**, **PostgreSQL**, **Redis**, **WebSockets**, **Docker**, and **Git**. The application allows two players to play in real time while maintaining player statistics, match history, leaderboards, and an admin dashboard. It also incorporates production-oriented concepts such as caching, rate limiting, background tasks, containerization, and version control.
 
 ---
 
-## 📌 Features
+# 📌 Project Overview
 
-### 🎮 Multiplayer Gameplay
-- Create and join game rooms
-- Real-time synchronization using WebSockets
-- Turn-based gameplay
-- Restart game functionality
-- Draw detection
-- Winner announcement
+This project demonstrates a modern full-stack web application using React for the frontend and FastAPI for the backend. It supports multiplayer gameplay through WebSockets, stores persistent data in PostgreSQL, improves performance using Redis, and runs the complete application using Docker Compose.
 
-### 👤 Player Management
-- Register players
-- Store player information in PostgreSQL
-- Player statistics
+---
 
-### 🏆 Leaderboard
-- Displays players ranked by wins
-- Automatically updates after every completed game
+# ✨ Features
 
-### 📜 Match History
-- Stores every completed match
-- Displays:
-  - Player 1
-  - Player 2
-  - Winner
-  - Draw matches
+## 🎮 Gameplay
 
-### 👨‍💼 Admin Panel
-- Secure Admin Login (JWT Authentication)
-- Dashboard Statistics
+- Real-time Multiplayer using WebSockets
+- Create Room
+- Join Room
+- Room Code Sharing
+- Turn-Based Synchronization
+- Winner Detection
+- Draw Detection
+- Restart / Rematch System
+- Theme Toggle (Dark / Light)
+
+---
+
+## 👤 Player Management
+
+- Player Registration
+- Store Player Details
+- Match History
+- Leaderboard
+- Winner Tracking
+
+---
+
+## 🔐 Authentication & Security
+
+- Admin Login
+- JWT Authentication
+- Protected Admin Routes
+- CORS Middleware
+- Environment Variables
+
+---
+
+## 📊 Admin Dashboard
+
 - Total Players
-- Total Games
+- Games Played
 - Total Wins
 - Active Rooms
-
-### 🔐 Authentication
-- JWT Token Authentication
-- Password Hashing using Passlib (bcrypt)
-
-### 🐳 Dockerized Application
-- Frontend Container
-- Backend Container
-- PostgreSQL Container
-- Docker Compose orchestration
+- Match History Management
 
 ---
 
-# 🛠️ Tech Stack
+# ⚡ Performance Optimizations
+
+## 🔴 Redis Caching
+
+Leaderboard data is cached in Redis to reduce repeated database queries.
+
+### Workflow
+
+```
+Client
+   │
+   ▼
+Redis Cache
+   │
+   ├── Cache Hit ✅
+   │       │
+   │       ▼
+   │   Return Cached Data
+   │
+   └── Cache Miss ❌
+           │
+           ▼
+      PostgreSQL
+           │
+           ▼
+ Cache Result for 60 Seconds
+```
+
+---
+
+## 🗑 Cache Invalidation
+
+Whenever a game is completed:
+
+- Game is saved to PostgreSQL
+- Existing leaderboard cache is deleted
+- Next leaderboard request rebuilds the cache
+
+This ensures users always receive updated rankings.
+
+---
+
+## 🚦 Rate Limiting
+
+Implemented using **SlowAPI** with **Redis**.
+
+Purpose:
+
+- Prevent API abuse
+- Protect backend resources
+- Reduce unnecessary requests
+- Improve server stability
+
+Example:
+
+```
+5 Requests / Minute
+
+↓
+
+HTTP 429 Too Many Requests
+```
+
+---
+
+## ⚙ Background Tasks
+
+FastAPI Background Tasks execute time-consuming operations after the response is sent.
+
+Example:
+
+- Generate Match Report
+- Logging
+- Notifications
+
+Workflow:
+
+```
+Save Game
+
+↓
+
+Response Sent
+
+↓
+
+Generate Match Report
+```
+
+---
+
+# 🐳 Docker
+
+The application is fully containerized.
+
+Containers:
+
+- Frontend
+- Backend
+- PostgreSQL
+- Redis
+
+Docker Compose manages:
+
+- Container Creation
+- Networking
+- Volumes
+- Service Communication
+
+---
+
+# 🔴 Redis
+
+Redis is used for:
+
+- Leaderboard Caching
+- Rate Limiting
+- Temporary In-Memory Storage
+
+Advantages:
+
+- Extremely Fast
+- Key-Value Database
+- Automatic Expiration (TTL)
+- Reduces Database Load
+
+---
+
+# 🗄 Database
+
+PostgreSQL stores:
+
+- Players
+- Games
+- Match History
+- Admin Accounts
+
+SQLAlchemy ORM is used for:
+
+- CRUD Operations
+- Relationships
+- Database Sessions
+
+---
+
+# 🌐 API Endpoints
+
+## Players
+
+```
+POST /players
+GET /players
+```
+
+---
+
+## Games
+
+```
+POST /games
+```
+
+---
+
+## Leaderboard
+
+```
+GET /leaderboard
+```
+
+---
+
+## Match History
+
+```
+GET /match-history
+```
+
+---
+
+## Authentication
+
+```
+POST /auth/login
+```
+
+---
+
+## Admin
+
+```
+GET /admin/dashboard
+GET /admin/dashboard-stats
+DELETE /admin/match-history
+```
+
+---
+
+# 🔌 WebSocket
+
+```
+ws://localhost:8000/ws
+```
+
+Supported Events
+
+- Create Room
+- Join Room
+- Move
+- Restart Request
+- Restart Accept
+- Disconnect
+
+---
+
+# 🏗 Tech Stack
 
 ## Frontend
+
 - React
 - Vite
-- JavaScript
+- React Context API
 - CSS
 
+---
+
 ## Backend
+
 - FastAPI
 - SQLAlchemy
-- JWT Authentication
 - WebSockets
+- JWT Authentication
+- SlowAPI
+- Background Tasks
+
+---
 
 ## Database
+
 - PostgreSQL
 
-## DevOps
+---
+
+## Cache
+
+- Redis
+
+---
+
+## Containerization
+
 - Docker
 - Docker Compose
+
+---
+
+## Version Control
+
+- Git
+- GitHub
+
+---
+
+# 🌿 Git Workflow
+
+The project follows a Git branching strategy for organized development.
+
+### Branches
+
+- **main** – Stable production-ready code
+- **dev** – Development branch for new features
+- **production** – Deployment-ready branch
+
+### Git Concepts Used
+
+- Repository Initialization
+- Branch Creation
+- Branch Switching
+- Merge
+- Push & Pull
+- Conflict Resolution
+- `.gitignore`
+- Removing Sensitive Files (`.env`)
+- Docker-Friendly Repository Structure
 
 ---
 
@@ -78,89 +347,38 @@ A full-stack real-time multiplayer Tic Tac Toe application built using **React**
 
 ```
 tictactoe/
+
 │
 ├── docker-compose.yml
 ├── .gitignore
-├── .dockerignore
 ├── README.md
 │
 ├── tictactoebackend/
+│   ├── models/
 │   ├── routes/
+│   ├── schemas/
 │   ├── middleware/
 │   ├── utils/
-│   ├── database.py
-│   ├── models.py
-│   ├── main.py
-│   ├── requirements.txt
-│   └── Dockerfile
+│   ├── Dockerfile
 │
-└── tictactoefront/
-    └── tictactoe/
-        ├── src/
-        ├── public/
-        ├── package.json
-        └── Dockerfile
+├── tictactoefront/
+│   ├── src/
+│   ├── components/
+│   ├── context/
+│   ├── services/
+│   ├── pages/
+│   ├── Dockerfile
 ```
 
 ---
 
-# 🚀 Getting Started
+# ▶ Running the Project
 
-## Clone the Repository
-
-```bash
-git clone https://github.com/YOUR_USERNAME/tictactoe.git
-
-cd tictactoe
-```
-
----
-
-# ⚙️ Environment Variables
-
-## Backend (`tictactoebackend/.env`)
-
-```env
-DATABASE_URL=postgresql://postgres:your_password@postgres:5432/tictactoe_db
-
-SECRET_KEY=your_secret_key
-
-ALGORITHM=HS256
-
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-```
-
----
-
-## Docker Compose (`.env`)
-
-```env
-POSTGRES_USER=postgres
-
-POSTGRES_PASSWORD=your_password
-
-POSTGRES_DB=tictactoe_db
-```
-
----
-
-# 🐳 Running with Docker
-
-Build and start all containers
+## Using Docker
 
 ```bash
 docker compose up --build
 ```
-
-Stop containers
-
-```bash
-docker compose down
-```
-
----
-
-# 🌐 Application URLs
 
 Frontend
 
@@ -168,13 +386,13 @@ Frontend
 http://localhost:5173
 ```
 
-Backend API
+Backend
 
 ```
 http://localhost:8000
 ```
 
-Swagger Documentation
+Swagger
 
 ```
 http://localhost:8000/docs
@@ -182,89 +400,73 @@ http://localhost:8000/docs
 
 ---
 
-# 📊 Database
+# ⚙ Environment Variables
 
-PostgreSQL stores:
+Backend
 
-- Players
-- Games
-- Match History
-- Leaderboard Data
-- Admin Credentials
-
----
-
-# 🔒 Security
-
-- JWT Authentication
-- Password Hashing (bcrypt)
-- Environment Variables
-- Docker Networking
-- Docker Volumes for Persistent Database Storage
+```
+DATABASE_URL=
+SECRET_KEY=
+ALGORITHM=
+ACCESS_TOKEN_EXPIRE_MINUTES=
+```
 
 ---
 
-# 🧪 Features Demonstrated
+# 🧠 Concepts Implemented
 
+### Backend
+
+- REST API Development
 - CRUD Operations
-- REST APIs
 - SQLAlchemy ORM
-- PostgreSQL Relationships
-- FastAPI Dependency Injection
-- Middleware
+- PostgreSQL
 - JWT Authentication
-- Password Hashing
+- Protected Routes
+- Background Tasks
+- Logging Middleware
+- Rate Limiting
+- Redis Caching
+- Cache Invalidation
 - WebSockets
-- Docker Containers
+- Real-Time Communication
+
+### Frontend
+
+- React
+- React Context API
+- Component-Based Architecture
+- Theme Switching
+
+### DevOps
+
+- Docker
 - Docker Compose
 - Docker Networking
 - Docker Volumes
 - Environment Variables
-- Git & GitHub Best Practices
+
+### Version Control
+
+- Git
+- GitHub
+- Branching Strategy
+- Merge
+- Conflict Resolution
+- `.gitignore`
 
 ---
 
-# 📸 Screenshots
+# 🚀 Future Improvements
 
-You can add screenshots of:
-
-- Home Page
-- Multiplayer Lobby
-- Gameplay
-- Winner Screen
-- Leaderboard
-- Match History
-- Admin Login
-- Admin Dashboard
-- Docker Containers Running
-
-Example:
-
-```
-screenshots/
-│
-├── home.png
-├── gameplay.png
-├── leaderboard.png
-├── admin-dashboard.png
-```
-
----
-
-# 🧠 What I Learned
-
-Through this project, I gained hands-on experience with:
-
-- Building REST APIs using FastAPI
-- Designing relational databases with PostgreSQL
-- SQLAlchemy ORM and Relationships
-- JWT Authentication
-- Real-time communication using WebSockets
-- Dockerizing a Full Stack Application
-- Docker Compose
-- Environment Variables
-- Git Branching & Version Control
-- Debugging Backend and Docker Issues
+- Email Notifications
+- Tournament Mode
+- Spectator Mode
+- AI Opponent
+- Online Presence Indicator
+- Game Analytics
+- Cloud Deployment
+- CI/CD Pipeline
 
 ---
 
@@ -272,10 +474,12 @@ Through this project, I gained hands-on experience with:
 
 **Shreya Kumar**
 
-GitHub: https://github.com/ShreyaKumar09
+### Tech Stack
 
----
-
-# ⭐ If you like this project
-
-If you found this project helpful or interesting, consider giving it a ⭐ on GitHub!
+- React
+- FastAPI
+- PostgreSQL
+- Redis
+- WebSockets
+- Docker
+- Git & GitHub
