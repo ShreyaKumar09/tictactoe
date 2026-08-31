@@ -1,15 +1,27 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
-
+import time
 from database import get_db
 from models import Player, Game
 from schemas import GameCreate
+from redis_client import redis_client
 
 router = APIRouter(prefix="/games", tags=["Games"])
 
+def generate_match_report():
 
+    print("📄 Generating match report...")
+
+    time.sleep(5)
+
+    print("✅ Match report generated!")
+    
 @router.post("")
-def create_game(game: GameCreate, db: Session = Depends(get_db)):
+def create_game(
+    game: GameCreate,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
 
     player1 = db.query(Player).filter(Player.id == game.player1_id).first()
     player2 = db.query(Player).filter(Player.id == game.player2_id).first()
@@ -24,7 +36,12 @@ def create_game(game: GameCreate, db: Session = Depends(get_db)):
     if game.winner_id is not None and not winner:
         raise HTTPException(status_code=404, detail="Invalid winner ID")
 
-    existing_game = db.query(Game).filter(Game.match_key == game.match_key).first()
+    existing_game = (
+        db.query(Game)
+        .filter(Game.match_key == game.match_key)
+        .first()
+    )
+
     if existing_game:
         return {
             "message": "Game already saved.",
@@ -46,6 +63,13 @@ def create_game(game: GameCreate, db: Session = Depends(get_db)):
     db.add(new_game)
     db.commit()
     db.refresh(new_game)
+    background_tasks.add_task(generate_match_report) 
+
+    # -------------------------------
+    # Clear Redis cache
+    # -------------------------------
+    redis_client.delete("leaderboard")
+    print("🗑️ Leaderboard cache cleared")
 
     return {
         "message": "Game saved successfully!",

@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from middleware.logging_middleware import LoggingMiddleware
-
+from middleware.rate_limit_middleware import RateLimitMiddleware
+from redis_client import redis_client
 from routes.player import router as player_router
 from routes.game import router as game_router
 from routes.match_history import router as match_history_router
@@ -19,9 +20,9 @@ from models.admin import Admin
 
 Base.metadata.create_all(bind=engine)
 
-from fastapi import FastAPI
-
 app = FastAPI()
+
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,6 +32,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(LoggingMiddleware)
+app.add_middleware(RateLimitMiddleware)  
+
 
 
 @app.get("/")
