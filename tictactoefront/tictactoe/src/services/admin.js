@@ -11,3 +11,15 @@ export async function clearMatchHistory() {
 
   return response.data;
 }
+
+export async function getAdminMatchHistory() {
+  const token = sessionStorage.getItem("token");
+
+  const response = await api.get("/admin/match-history", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data;
+}

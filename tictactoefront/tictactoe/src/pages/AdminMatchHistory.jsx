@@ -1,27 +1,28 @@
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 
-import api from "../services/api";
+import { getAdminMatchHistory } from "../services/admin";
 import { isAuthenticated, logout } from "../services/auth";
 
 import AdminSidebar from "../components/admin/AdminSidebar";
 import AdminNavbar from "../components/admin/AdminNavbar";
 
-function AdminGames() {
+
+function AdminMatchHistory() {
   const navigate = useNavigate();
 
-  const [games, setGames] = useState([]);
+  const [matches, setMatches] = useState([]);
 
   useEffect(() => {
-    loadGames();
+    fetchMatches();
   }, []);
 
-  async function loadGames() {
+  async function fetchMatches() {
     try {
-      const response = await api.get("/match-history");
-      setGames(response.data);
+      const data = await getAdminMatchHistory();
+      setMatches(data);
     } catch (error) {
-      console.error("Failed to load games:", error);
+      console.error(error);
     }
   }
 
@@ -43,24 +44,24 @@ function AdminGames() {
 
         <div className="admin-action-card">
           <div className="admin-page-header">
-            <h2>🎮 Games</h2>
-
+            <h2>📜 Match History</h2>
             <button
-              className="refresh-btn"
-              onClick={loadGames}
+                className="refresh-btn"
+                onClick={fetchMatches}
             >
-              🔄 Refresh
+                🔄 Refresh
             </button>
-          </div>
 
+          </div>
           <p>
-            Total Games: <strong>{games.length}</strong>
+            Total Matches: <strong>{matches.length}</strong>
           </p>
 
           <table className="admin-table">
             <thead>
               <tr>
-                <th>#</th>
+                <th>Match ID</th>
+                <th>Match Key</th>
                 <th>Player 1</th>
                 <th>Player 2</th>
                 <th>Winner</th>
@@ -68,20 +69,19 @@ function AdminGames() {
             </thead>
 
             <tbody>
-              {games.length > 0 ? (
-                games.map((game, index) => (
-                  <tr key={game.id}>
-                    <td>{index + 1}</td>
-                    <td>{game.player1}</td>
-                    <td>{game.player2}</td>
-                    <td>{game.winner}</td>
+              {matches.length > 0 ? (
+                matches.map((match) => (
+                  <tr key={match.match_id}>
+                    <td>{match.match_id}</td>
+                    <td>{match.match_key}</td>
+                    <td>{match.player1}</td>
+                    <td>{match.player2}</td>
+                    <td>{match.winner}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" style={{ textAlign: "center" }}>
-                    No games found.
-                  </td>
+                  <td colSpan={5}>No Match History Found</td>
                 </tr>
               )}
             </tbody>
@@ -92,4 +92,4 @@ function AdminGames() {
   );
 }
 
-export default AdminGames;
+export default AdminMatchHistory;

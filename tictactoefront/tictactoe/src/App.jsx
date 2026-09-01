@@ -9,7 +9,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminPlayers from "./pages/AdminPlayers";
 import AdminGames from "./pages/AdminGames";
 import AdminLeaderboard from "./pages/AdminLeaderboard";
-
+import AdminMatchHistory from "./pages/AdminMatchHistory";
 import { useWebSocket } from "./context/WebSocketContext";
 
 function AppShell() {
@@ -38,7 +38,13 @@ function AppShell() {
       path="/admin/leaderboard"
       element={<AdminLeaderboard />}
       />
+      <Route
+      path="/admin/match-history"
+      element={<AdminMatchHistory />}
+      />
     </Routes>
+
+      
   );
 }
 
