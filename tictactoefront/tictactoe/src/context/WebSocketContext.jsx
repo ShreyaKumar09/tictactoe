@@ -15,7 +15,7 @@ export function WebSocketProvider({ children }) {
   const [lastMessage, setLastMessage] = useState(null);
 
   useEffect(() => {
-    const socket = new WebSocket("ws://127.0.0.1:8000/ws");
+    const socket = new WebSocket("wss://tictactoe-q6bb.onrender.com/ws");
 
     socketRef.current = socket;
 
