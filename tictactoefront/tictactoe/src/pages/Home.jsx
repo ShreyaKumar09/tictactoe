@@ -469,7 +469,7 @@ function Home() {
       return;
     }
 
-    const resultKey = `${roomId}-${winner || "draw"}-${player1Id ?? "n"}-${player2Id ?? "n"}-${board.join("")}`;
+    const resultKey = roomId;
 
     if (completedMatchKeyRef.current === resultKey) {
       setShowResultModal(true);

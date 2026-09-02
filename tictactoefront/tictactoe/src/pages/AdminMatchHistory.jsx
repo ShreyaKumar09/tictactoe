@@ -61,7 +61,7 @@ function AdminMatchHistory() {
             <thead>
               <tr>
                 <th>Match ID</th>
-                <th>Match Key</th>
+                <th>Room Code</th>
                 <th>Player 1</th>
                 <th>Player 2</th>
                 <th>Winner</th>

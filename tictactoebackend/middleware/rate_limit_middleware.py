@@ -23,7 +23,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if requests == 1:
             redis_client.expire(key, 60)
 
-        if requests > 10:
+        if requests > 100:
             return JSONResponse(
                 status_code=429,
                 content={"detail": "Too many requests. Try again later."},
