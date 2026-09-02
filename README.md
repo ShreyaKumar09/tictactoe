@@ -1,485 +1,225 @@
-# 🎮 Tic Tac Toe Multiplayer
+# 🎮 Real-Time Multiplayer Tic Tac Toe
 
-A full-stack real-time multiplayer Tic Tac Toe web application built using **React**, **FastAPI**, **PostgreSQL**, **Redis**, **WebSockets**, **Docker**, and **Git**. The application allows two players to play in real time while maintaining player statistics, match history, leaderboards, and an admin dashboard. It also incorporates production-oriented concepts such as caching, rate limiting, background tasks, containerization, and version control.
-
----
-
-# 📌 Project Overview
-
-This project demonstrates a modern full-stack web application using React for the frontend and FastAPI for the backend. It supports multiplayer gameplay through WebSockets, stores persistent data in PostgreSQL, improves performance using Redis, and runs the complete application using Docker Compose.
+A production-ready real-time multiplayer Tic Tac Toe web application built with **React, FastAPI, PostgreSQL, Redis, and WebSockets**. The application supports live multiplayer gameplay, persistent match history, leaderboards, and an admin dashboard. It is fully containerized with Docker and deployed using modern cloud platforms.
 
 ---
 
-# ✨ Features
+## 🚀 Live Demo
 
-## 🎮 Gameplay
+**Frontend:** https://sktictactoegame.netlify.app
 
-- Real-time Multiplayer using WebSockets
+**Backend API:** https://tictactoe-q6bb.onrender.com
+
+**Swagger Documentation:** https://tictactoe-q6bb.onrender.com/docs
+
+---
+
+# Features
+
+### Multiplayer Gameplay
+
 - Create Room
-- Join Room
-- Room Code Sharing
-- Turn-Based Synchronization
-- Winner Detection
-- Draw Detection
-- Restart / Rematch System
-- Theme Toggle (Dark / Light)
+- Join Room using Room Code
+- Real-time moves using WebSockets
+- Turn-based gameplay
+- Winner & Draw detection
+- Rematch functionality
 
 ---
 
-## 👤 Player Management
+### Player Management
 
-- Player Registration
-- Store Player Details
+- Register Players
+- Store Player Records
 - Match History
 - Leaderboard
-- Winner Tracking
 
 ---
 
-## 🔐 Authentication & Security
+### Admin Dashboard
 
-- Admin Login
 - JWT Authentication
-- Protected Admin Routes
-- CORS Middleware
-- Environment Variables
-
----
-
-## 📊 Admin Dashboard
-
-- Total Players
-- Games Played
-- Total Wins
-- Active Rooms
-- Match History Management
-
----
-
-# ⚡ Performance Optimizations
-
-## 🔴 Redis Caching
-
-Leaderboard data is cached in Redis to reduce repeated database queries.
-
-### Workflow
-
-```
-Client
-   │
-   ▼
-Redis Cache
-   │
-   ├── Cache Hit ✅
-   │       │
-   │       ▼
-   │   Return Cached Data
-   │
-   └── Cache Miss ❌
-           │
-           ▼
-      PostgreSQL
-           │
-           ▼
- Cache Result for 60 Seconds
-```
-
----
-
-## 🗑 Cache Invalidation
-
-Whenever a game is completed:
-
-- Game is saved to PostgreSQL
-- Existing leaderboard cache is deleted
-- Next leaderboard request rebuilds the cache
-
-This ensures users always receive updated rankings.
-
----
-
-## 🚦 Rate Limiting
-
-Implemented using **SlowAPI** with **Redis**.
-
-Purpose:
-
-- Prevent API abuse
-- Protect backend resources
-- Reduce unnecessary requests
-- Improve server stability
-
-Example:
-
-```
-5 Requests / Minute
-
-↓
-
-HTTP 429 Too Many Requests
-```
-
----
-
-## ⚙ Background Tasks
-
-FastAPI Background Tasks execute time-consuming operations after the response is sent.
-
-Example:
-
-- Generate Match Report
-- Logging
-- Notifications
-
-Workflow:
-
-```
-Save Game
-
-↓
-
-Response Sent
-
-↓
-
-Generate Match Report
-```
-
----
-
-# 🐳 Docker
-
-The application is fully containerized.
-
-Containers:
-
-- Frontend
-- Backend
-- PostgreSQL
-- Redis
-
-Docker Compose manages:
-
-- Container Creation
-- Networking
-- Volumes
-- Service Communication
-
----
-
-# 🔴 Redis
-
-Redis is used for:
-
-- Leaderboard Caching
-- Rate Limiting
-- Temporary In-Memory Storage
-
-Advantages:
-
-- Extremely Fast
-- Key-Value Database
-- Automatic Expiration (TTL)
-- Reduces Database Load
-
----
-
-# 🗄 Database
-
-PostgreSQL stores:
-
-- Players
-- Games
+- Secure Login
+- Dashboard Statistics
+- Player Management
 - Match History
-- Admin Accounts
-
-SQLAlchemy ORM is used for:
-
-- CRUD Operations
-- Relationships
-- Database Sessions
+- Clear Match History
 
 ---
 
-# 🌐 API Endpoints
+### Backend Features
 
-## Players
-
-```
-POST /players
-GET /players
-```
-
----
-
-## Games
-
-```
-POST /games
-```
+- REST APIs using FastAPI
+- SQLAlchemy ORM
+- PostgreSQL Database
+- Redis Caching
+- Rate Limiting
+- Logging Middleware
+- Dockerized Backend
 
 ---
 
-## Leaderboard
-
-```
-GET /leaderboard
-```
-
----
-
-## Match History
-
-```
-GET /match-history
-```
-
----
-
-## Authentication
-
-```
-POST /auth/login
-```
-
----
-
-## Admin
-
-```
-GET /admin/dashboard
-GET /admin/dashboard-stats
-DELETE /admin/match-history
-```
-
----
-
-# 🔌 WebSocket
-
-```
-ws://localhost:8000/ws
-```
-
-Supported Events
-
-- Create Room
-- Join Room
-- Move
-- Restart Request
-- Restart Accept
-- Disconnect
-
----
-
-# 🏗 Tech Stack
+# Tech Stack
 
 ## Frontend
 
 - React
 - Vite
-- React Context API
+- Axios
 - CSS
-
----
+- WebSocket API
 
 ## Backend
 
 - FastAPI
 - SQLAlchemy
-- WebSockets
-- JWT Authentication
-- SlowAPI
-- Background Tasks
-
----
+- Pydantic
+- Uvicorn
 
 ## Database
 
-- PostgreSQL
-
----
+- PostgreSQL (Neon)
 
 ## Cache
 
-- Redis
+- Redis (Upstash)
 
----
+## Authentication
 
-## Containerization
+- JWT
+- bcrypt
 
+## Deployment
+
+- Netlify
+- Render
 - Docker
-- Docker Compose
 
 ---
 
-## Version Control
+# Architecture
 
-- Git
-- GitHub
-
----
-
-# 🌿 Git Workflow
-
-The project follows a Git branching strategy for organized development.
-
-### Branches
-
-- **main** – Stable production-ready code
-- **dev** – Development branch for new features
-- **production** – Deployment-ready branch
-
-### Git Concepts Used
-
-- Repository Initialization
-- Branch Creation
-- Branch Switching
-- Merge
-- Push & Pull
-- Conflict Resolution
-- `.gitignore`
-- Removing Sensitive Files (`.env`)
-- Docker-Friendly Repository Structure
+```
+                 React (Netlify)
+                       │
+             REST + WebSockets
+                       │
+                FastAPI (Render)
+                 │            │
+                 │            │
+                 ▼            ▼
+      PostgreSQL (Neon)   Redis (Upstash)
+```
 
 ---
 
-# 📂 Project Structure
+# Folder Structure
 
 ```
 tictactoe/
 
-│
-├── docker-compose.yml
-├── .gitignore
-├── README.md
+├── tictactoefront/
+│   └── tictactoe/
 │
 ├── tictactoebackend/
-│   ├── models/
 │   ├── routes/
-│   ├── schemas/
+│   ├── models/
 │   ├── middleware/
 │   ├── utils/
+│   ├── database.py
+│   ├── redis_client.py
 │   ├── Dockerfile
+│   └── main.py
 │
-├── tictactoefront/
-│   ├── src/
-│   ├── components/
-│   ├── context/
-│   ├── services/
-│   ├── pages/
-│   ├── Dockerfile
+└── docker-compose.yml
 ```
 
 ---
 
-# ▶ Running the Project
+# Local Setup
 
-## Using Docker
+## Clone Repository
 
 ```bash
-docker compose up --build
+git clone <repository-url>
 ```
 
-Frontend
+## Backend
 
-```
-http://localhost:5173
-```
+```bash
+cd tictactoebackend
 
-Backend
+pip install -r requirements.txt
 
-```
-http://localhost:8000
+uvicorn main:app --reload
 ```
 
-Swagger
+## Frontend
 
-```
-http://localhost:8000/docs
+```bash
+cd tictactoefront/tictactoe
+
+npm install
+
+npm run dev
 ```
 
 ---
 
-# ⚙ Environment Variables
+# Environment Variables
 
 Backend
 
 ```
 DATABASE_URL=
+REDIS_URL=
 SECRET_KEY=
 ALGORITHM=
-ACCESS_TOKEN_EXPIRE_MINUTES=
 ```
 
 ---
 
-# 🧠 Concepts Implemented
+# Deployment
 
-### Backend
+| Service | Platform |
+|----------|----------|
+| Frontend | Netlify |
+| Backend | Render |
+| Database | Neon |
+| Redis | Upstash |
 
-- REST API Development
-- CRUD Operations
-- SQLAlchemy ORM
-- PostgreSQL
-- JWT Authentication
-- Protected Routes
-- Background Tasks
-- Logging Middleware
-- Rate Limiting
-- Redis Caching
-- Cache Invalidation
+---
+
+# Key Concepts Implemented
+
+- REST APIs
 - WebSockets
-- Real-Time Communication
-
-### Frontend
-
-- React
-- React Context API
-- Component-Based Architecture
-- Theme Switching
-
-### DevOps
-
+- JWT Authentication
+- PostgreSQL
+- SQLAlchemy ORM
+- Redis
 - Docker
 - Docker Compose
-- Docker Networking
-- Docker Volumes
-- Environment Variables
-
-### Version Control
-
-- Git
-- GitHub
-- Branching Strategy
-- Merge
-- Conflict Resolution
-- `.gitignore`
-
----
-
-# 🚀 Future Improvements
-
-- Email Notifications
-- Tournament Mode
-- Spectator Mode
-- AI Opponent
-- Online Presence Indicator
-- Game Analytics
+- Rate Limiting
+- Middleware
 - Cloud Deployment
-- CI/CD Pipeline
+- Environment Variables
+- Production Debugging
 
 ---
 
-# 👩‍💻 Author
+# Future Improvements
 
-**Shreya Kumar**
+- Friend System
+- Spectator Mode
+- Email Verification
+- OAuth Login
+- Match Replay
+- CI/CD with GitHub Actions
+- Kubernetes Deployment
 
-### Tech Stack
+---
 
-- React
-- FastAPI
-- PostgreSQL
-- Redis
-- WebSockets
-- Docker
-- Git & GitHub
+# Author
+
+Shreya Kumar
