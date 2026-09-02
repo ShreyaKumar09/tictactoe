@@ -4,7 +4,7 @@ export function connect(onMessage) {
   // Prevent opening multiple connections
   if (socket) return;
 
-  socket = new WebSocket("ws://127.0.0.1:8000/ws");
+  socket = new WebSocket("wss://tictactoe-q6bb.onrender.com/ws");
 
   socket.onopen = () => {
     console.log("✅ Connected to WebSocket");
